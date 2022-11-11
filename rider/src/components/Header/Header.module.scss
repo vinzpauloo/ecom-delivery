@@ -1,0 +1,139 @@
+@import "../../theme/_variables.scss";
+@import "../../theme/_mixins.scss";
+
+.header {
+  @media (min-width: 768px) {
+    box-shadow: 3px 4px 5px rgba(0, 0, 0, 0.25);
+    width: 100%;
+    height: $FM_HEADER_HEIGHT;
+  }
+  @include devices(md) {
+    height: $FM_HEADER_HEIGHT_MD;
+  }
+
+  @include devices(xs) {
+    height: $FM_HEADER_HEIGHT_XS;
+
+    > div {
+      padding: 0 5px;
+    }
+  }
+}
+
+.logo {
+  height: 50px;
+  position: relative;
+
+  @media (width: 320px) {
+    margin-right: 50px;
+  }
+  @media (width: 375px) {
+    margin-right: 105px;
+  }
+  @media (width: 425px) {
+    margin-right: 150px;
+  }
+
+  a {
+    img {
+      width: auto;
+      height: 100%;
+      transition: all 0.3s ease-in-out;
+
+      &.logoHover {
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0;
+      }
+    }
+
+    &:hover {
+      img {
+        &.logoMain {
+          opacity: 0;
+        }
+
+        &.logoHover {
+          opacity: 1;
+        }
+      }
+    }
+  }
+
+  @include devices(md) {
+    height: 40px;
+  }
+
+  @include devices(xs) {
+    height: 30px;
+  }
+}
+
+.location {
+  a {
+    transition: all 0.3s ease-in-out;
+
+    &:hover {
+      filter: brightness(50%);
+    }
+
+    img {
+      height: 20px;
+      margin-right: 5px;
+    }
+
+    p {
+      color: #515151;
+      font-size: 14px;
+      line-height: 1.2;
+      text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.25);
+    }
+
+    span {
+      @media (max-width: 425px) {
+        display: none;
+      }
+    }
+  }
+}
+
+.search {
+  position: relative;
+  width: 65%;
+
+  input {
+    background: #f3f3f3;
+    border: 1px solid #dbdbdb;
+    border-radius: 5px;
+    box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.25);
+    height: 40px;
+    width: 100%;
+    margin: 0;
+    padding: 12px 40px 12px 12px;
+    line-height: 1;
+    outline: none;
+  }
+
+  img {
+    width: 24px;
+    position: absolute;
+    top: 8px;
+    right: 12px;
+  }
+
+  @include devices(md) {
+    width: 40%;
+
+    input {
+      font-size: 14px;
+      height: 30px;
+      padding: 10px 35px 10px 10px;
+    }
+
+    img {
+      width: 20px;
+      top: 5px;
+    }
+  }
+}

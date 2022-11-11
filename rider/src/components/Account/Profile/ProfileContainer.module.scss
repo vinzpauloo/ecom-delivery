@@ -1,0 +1,34 @@
+@import "../../../theme/_variables.scss";
+@import "../../../theme/_mixins.scss";
+
+.container {
+  overflow-x: hidden;
+  min-height: calc(100vh - $FM_HEADER_HEIGHT - $FM_FOOTER_HEIGHT);
+  padding: 40px 0;
+
+  @include devices(md) {
+    min-height: auto;
+    margin-bottom: -280px + $FM_FOOTER_HEIGHT_MD;
+  }
+}
+
+.navigationContainer,
+.contentContainer {
+  background: #f2f2f2;
+  border: 1px solid #000000;
+  padding: 30px 20px;
+  height: 766px;
+
+  @media (max-width: 768px) {
+    height: 870px;
+  }
+}
+
+.contentContainer {
+  background-color: #fdf5e7;
+}
+
+.content {
+  height: 100%;
+  padding: 30px 20px;
+}

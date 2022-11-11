@@ -1,0 +1,73 @@
+@import "~bootstrap/scss/bootstrap";
+@import "./theme/_variables.scss";
+@import "./theme/_mixins.scss";
+
+@font-face {
+  font-family: "Neris";
+  src: url("./assets/fonts/Neris-Light.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Neris";
+  src: url("./assets/fonts/Neris-Thin.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Neris";
+  src: url("./assets/fonts/Neris-SemiBold.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+* {
+  font-family: "Neris";
+  font-weight: 300;
+}
+
+html {
+  scroll-behavior: auto !important;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
+.page {
+  margin-top: $FM_HEADER_HEIGHT;
+
+  @include devices(md) {
+    margin-top: $FM_HEADER_HEIGHT_MD;
+  }
+
+  @include devices(xs) {
+    margin-top: $FM_HEADER_HEIGHT_XS;
+  }
+}
+
+.custom-header {
+  @include devices(md) {
+    .page {
+      margin-top: 0;
+    }
+  }
+}
+
+.custom-bg {
+  .page {
+    background: $FM_BG_LIGHT_BROWN;
+  }
+}
+
+.no-footer-on-mobile {
+  @include devices(sm) {
+    footer {
+      display: none;
+    }
+  }
+}
