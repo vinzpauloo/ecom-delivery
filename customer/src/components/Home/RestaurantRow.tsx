@@ -1,27 +1,24 @@
 import { Container } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
-// Import Swiper React components
+// Swiper components & styles
 import { Swiper, SwiperSlide } from "swiper/react";
-
-// Import Swiper styles
-import "swiper/css";
-import "swiper/css/effect-fade";
-import "swiper/css/navigation";
-
-// Import required modules
 import { Autoplay, Navigation } from "swiper";
+import "swiper/scss";
+import "swiper/scss/effect-fade";
+import "swiper/scss/navigation";
 
 import styles from "./RestaurantRow.module.scss";
 
 interface ContainerProps {
-  slides: Slide[];
+  slides: TSlide[];
 }
 
-type Slide = {
-  photo: string;
+type TSlide = {
+  id: string;
   name: string;
   address: string;
+  photo: string;
   social_link: string;
 };
 
@@ -54,14 +51,18 @@ const RestaurantRow: React.FC<ContainerProps> = ({ slides }) => {
               <div className={styles.slideItem}>
                 <div className={styles.slideImageContainer}>
                   <img
-                    src={process.env.REACT_APP_BASE_URL + item.photo}
+                    // src={process.env.REACT_APP_BASE_URL + item.photo}
+                    src={item.photo}
                     alt=""
                   />
                 </div>
                 <div className={styles.slideContentContainer}>
                   <p className={styles.slideTitle}>{item.name}</p>
                   <p className={styles.slideDescription}>{item.address}</p>
-                  <Link to="/restaurant" className={styles.slideLink}>
+                  <Link
+                    to={`/restaurants/${item.id}`}
+                    className={styles.slideLink}
+                  >
                     Visit
                   </Link>
                 </div>
@@ -84,14 +85,18 @@ const RestaurantRow: React.FC<ContainerProps> = ({ slides }) => {
               <div className={styles.slideItem}>
                 <div className={styles.slideImageContainer}>
                   <img
-                    src={process.env.REACT_APP_BASE_URL + item.photo}
+                    // src={process.env.REACT_APP_BASE_URL + item.photo}
+                    src={item.photo}
                     alt=""
                   />
                 </div>
                 <div className={styles.slideContentContainer}>
                   <p className={styles.slideTitle}>{item.name}</p>
                   <p className={styles.slideDescription}>{item.address}</p>
-                  <Link to="/restaurant" className={styles.slideLink}>
+                  <Link
+                    to={`/restaurants/${item.id}`}
+                    className={styles.slideLink}
+                  >
                     Visit
                   </Link>
                 </div>

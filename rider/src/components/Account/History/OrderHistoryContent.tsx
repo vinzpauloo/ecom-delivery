@@ -1,829 +1,462 @@
-import React from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import Table from "react-bootstrap/Table";
-import Modal from "react-bootstrap/Modal";
-import { Routes, Route, useNavigate } from "react-router-dom";
-import { Container, Row, Col } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import {
+  Table,
+  Form,
+  Row,
+  Col,
+  Button,
+  Modal,
+  Dropdown,
+  Container,
+} from "react-bootstrap";
+import { Link, useParams } from "react-router-dom";
+import { useGetOrderStatus } from "../../../hooks/useGetOrderStatus";
+import { useRiderOTW } from "../../../hooks/useRiderOTW";
+import constants from "../../../utils/constants.json";
 
-import "./OrderHistoryContent.scss";
+import styles from "./OrderHistoryContent.module.scss";
 
-import SearchIcon from "../../../assets/images/search.png";
-import RewardsIcon from "../../../assets/images/rewards-icon.png";
-import OrderReceivedIcon from "../../../assets/images/order-received-icon.png";
+interface ContainerProps {}
 
-function DeliveryModal(props: any) {
-  return (
-    <Modal
-      {...props}
-      size="lg"
-      aria-labelledby="contained-modal-title-vcenter"
-      centered
-    >
-      <Modal.Header closeButton>
-        <Modal.Title id="contained-modal-title-vcenter">
-          FOR DELIVERY
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Table size="sm">
-          <thead className="table-head">
-            <tr>
-              <th>Order ID</th>
-              <th>Date</th>
-              <th>Order Placed Time</th>
-              <th>Ordered Delivered</th>
-              <th>Rider Name</th>
-              <th>Food Items</th>
-              <th>Grand Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>BLH-0001</td>
-              <td>10/13/2022</td>
-              <td>12:30PM</td>
-              <td>1:30PM</td>
-              <td>Aerox-Alexan</td>
-              <td>Food Items</td>
-              <td>456 php</td>
-            </tr>
-            <tr>
-              <td>BLH-0002</td>
-              <td>10/13/2022</td>
-              <td>12:30PM</td>
-              <td>1:30PM</td>
-              <td>Aerox-Alexan</td>
-              <td>Food Items</td>
-              <td>456 php</td>
-            </tr>
-            <tr>
-              <td>BLH-0003</td>
-              <td>10/13/2022</td>
-              <td>12:30PM</td>
-              <td>1:30PM</td>
-              <td>Aerox-Alexan</td>
-              <td>Food Items</td>
-              <td>456 php</td>
-            </tr>
-            <tr>
-              <td>BLH-0004</td>
-              <td>10/13/2022</td>
-              <td>12:30PM</td>
-              <td>1:30PM</td>
-              <td>Aerox-Alexan</td>
-              <td>Food Items</td>
-              <td>456 php</td>
-            </tr>
-            <tr>
-              <td>BLH-0005</td>
-              <td>10/13/2022</td>
-              <td>12:30PM</td>
-              <td>1:30PM</td>
-              <td>Aerox-Alexan</td>
-              <td>Food Items</td>
-              <td>456 php</td>
-            </tr>
-            <tr>
-              <td>BLH-0006</td>
-              <td>10/13/2022</td>
-              <td>12:30PM</td>
-              <td>1:30PM</td>
-              <td>Aerox-Alexan</td>
-              <td>Food Items</td>
-              <td>456 php</td>
-            </tr>
-            <tr>
-              <td>BLH-0007</td>
-              <td>10/13/2022</td>
-              <td>12:30PM</td>
-              <td>1:30PM</td>
-              <td>Aerox-Alexan</td>
-              <td>Food Items</td>
-              <td>456 php</td>
-            </tr>
-            <tr>
-              <td>BLH-0008</td>
-              <td>10/13/2022</td>
-              <td>12:30PM</td>
-              <td>1:30PM</td>
-              <td>Aerox-Alexan</td>
-              <td>Food Items</td>
-              <td>456 php</td>
-            </tr>
-            <tr>
-              <td>BLH-0009</td>
-              <td>10/13/2022</td>
-              <td>12:30PM</td>
-              <td>1:30PM</td>
-              <td>Aerox-Alexan</td>
-              <td>Food Items</td>
-              <td>456 php</td>
-            </tr>
-          </tbody>
-        </Table>
-      </Modal.Body>
-      <Modal.Footer>
-        <button onClick={props.onHide}>Close</button>
-      </Modal.Footer>
-    </Modal>
-  );
-}
+type ForDeliveryItem = {
+  created_at: string;
+  customer_id: string;
+  customer_mobile: string;
+  customer_name: string;
+  order_address: string;
+  order_email: string;
+  order_mobile: string;
+  order_status: string;
+  otw_at: string;
+  payment_type: string;
+  plate_number: string;
+  restaurant_name: string;
+  restaurant_id: string;
+  restaurant_address: string;
+  updated_at: string;
+  rider_id: string;
+  rider_vehicle_model: string;
+  id: string;
+};
 
-function CompletedModal(props: any) {
-  return (
-    <Modal
-      {...props}
-      size="lg"
-      aria-labelledby="contained-modal-title-vcenter"
-      centered
-    >
-      <Modal.Header closeButton className="px-4">
-        <Modal.Title id="contained-modal-title-vcenter" className="ms-auto">
-          COMPLETED
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body className="p-0">
-        <Container
-          className="order-delivery-container d-flex flex-column gap-3"
-          fluid
-        >
-          <Row className="mx-md-3">
-            <Col xs={3} md={2} className="d-flex flex-column gap-1">
-              <div className="order-id">
-                <p>ORDER ID: XRF123</p>
-              </div>
-              <div className="order-items">
-                <ul aria-label="Order Items">
-                  <li>Ramen Noodles(3x)</li>
-                  <li>Milk Tea(2x)</li>
-                  <li>1 Water Melon</li>
-                  <li>1 Boba Soya</li>
-                  <li>Pecking Duck (1x)</li>
-                </ul>
-              </div>
-              <div className="delivery-fee">
-                <p>
-                  Delivery Fee <br />
-                  <span>85 php</span>
-                </p>
-              </div>
-              <div className="grand-total">
-                <p>
-                  Grand Total <br />
-                  <span>1,350 php</span>
-                </p>
-              </div>
-            </Col>
-            <Col xs={8} md={4}>
-              <div className="customer-info">
-                <li>
-                  Customer Name: <span>Brandon Boyd</span>
-                </li>
-                <li>
-                  Contact Number: <span>0917 123 4567</span>
-                </li>
-                <li>
-                  Pick up Address :
-                  <span>
-                    Chan's Chinese Restaurant, Panglao, Bohol, Philippines
-                  </span>
-                </li>
-                <li>
-                  Delivery Address:
-                  <span>
-                    4117 41st Floor., GT Tower Intl., De La Costa, Makati City
-                  </span>
-                </li>
-                <li>
-                  Order Placed Time: <span>01:30pm</span>
-                </li>
-                <li>
-                  Order Status: <span>Order Received</span>
-                  <img src={OrderReceivedIcon} />
-                </li>
+type ForCompletedItem = {
+  created_at: string;
+  customer_id: string;
+  customer_mobile: string;
+  customer_name: string;
+  order_address: string;
+  order_email: string;
+  order_mobile: string;
+  order_status: string;
+  otw_at: string;
+  payment_type: string;
+  plate_number: string;
+  restaurant_name: string;
+  restaurant_id: string;
+  restaurant_address: string;
+  updated_at: string;
+  rider_id: string;
+  rider_name: string;
+  rider_vehicle_model: string;
+  id: string;
+  delivered_at: string;
+};
 
-                <div className="decline-accept">
-                  <a>Decline</a>
-                  <a>Accept</a>
-                </div>
-              </div>
-            </Col>
-          </Row>
+type ForCanceledItem = {
+  created_at: string;
+  customer_id: string;
+  customer_mobile: string;
+  customer_name: string;
+  order_address: string;
+  order_email: string;
+  order_mobile: string;
+  order_status: string;
+  otw_at: string;
+  payment_type: string;
+  plate_number: string;
+  restaurant_name: string;
+  restaurant_id: string;
+  updated_at: string;
+  rider_id: string;
+  rider_vehicle_model: string;
+  id: string;
+  delivered_at: string;
+  rider_name: string;
+};
 
-          <Row className="mx-md-3">
-            <Col xs={3} md={2} className="d-flex flex-column gap-1">
-              <div className="order-id">
-                <p>ORDER ID: XRF123</p>
-              </div>
-              <div className="order-items">
-                <ul aria-label="Order Items">
-                  <li>Ramen Noodles(3x)</li>
-                  <li>Milk Tea(2x)</li>
-                  <li>1 Water Melon</li>
-                  <li>1 Boba Soya</li>
-                  <li>Pecking Duck (1x)</li>
-                  <li>Pecking Duck (1x)</li>
-                  <li>Pecking Duck (1x)</li>
-                  <li>Pecking Duck (1x)</li>
-                  <li>Pecking Duck (1x)</li>
-                </ul>
-              </div>
-              <div className="delivery-fee">
-                <p>
-                  Delivery Fee <br />
-                  <span>85 php</span>
-                </p>
-              </div>
-              <div className="grand-total">
-                <p>
-                  Grand Total <br />
-                  <span>1,350 php</span>
-                </p>
-              </div>
-            </Col>
-            <Col xs={8} md={4}>
-              <div className="customer-info">
-                <li>
-                  Customer Name: <span>Brandon Boyd</span>
-                </li>
-                <li>
-                  Contact Number: <span>0917 123 4567</span>
-                </li>
-                <li>
-                  Pick up Address :
-                  <span>
-                    Chan's Chinese Restaurant, Panglao, Bohol, Philippines
-                  </span>
-                </li>
-                <li>
-                  Delivery Address:
-                  <span>
-                    4117 41st Floor., GT Tower Intl., De La Costa, Makati City
-                  </span>
-                </li>
-                <li>
-                  Order Placed Time: <span>01:30pm</span>
-                </li>
-                <li>
-                  Order Status: <span>Order Received</span>
-                  <img src={OrderReceivedIcon} />
-                </li>
+type GetAllOrderItem = {
+  created_at: string;
+  customer_id: string;
+  customer_mobile: string;
+  customer_name: string;
+  order_address: string;
+  order_email: string;
+  order_mobile: string;
+  order_status: string;
+  otw_at: string;
+  payment_type: string;
+  plate_number: string;
+  restaurant_name: string;
+  restaurant_id: string;
+  restaurant_address: string;
+  updated_at: string;
+  rider_id: string;
+  rider_vehicle_model: string;
+  id: number;
+};
 
-                <div className="decline-accept">
-                  <a>Decline</a>
-                  <a>Accept</a>
-                </div>
-              </div>
-            </Col>
-          </Row>
-        </Container>
-      </Modal.Body>
-      <Modal.Footer>
-        {/* <button onClick={props.onHide}>Close</button> */}
-      </Modal.Footer>
-    </Modal>
-  );
-}
-
-function CancelledModal(props: any) {
-  return (
-    <Modal
-      {...props}
-      size="lg"
-      aria-labelledby="contained-modal-title-vcenter"
-      centered
-    >
-      <Modal.Header closeButton className="px-4">
-        <Modal.Title id="contained-modal-title-vcenter" className="ms-auto">
-          CANCELLED
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body className="p-0">
-        <Container
-          className="order-delivery-container d-flex flex-column gap-3"
-          fluid
-        >
-          <Row className="mx-md-3">
-            <Col xs={3} md={2} className="d-flex flex-column gap-1">
-              <div className="order-id">
-                <p>ORDER ID: XRF123</p>
-              </div>
-              <div className="order-items">
-                <ul aria-label="Order Items">
-                  <li>Ramen Noodles(3x)</li>
-                  <li>Milk Tea(2x)</li>
-                  <li>1 Water Melon</li>
-                  <li>1 Boba Soya</li>
-                  <li>Pecking Duck (1x)</li>
-                </ul>
-              </div>
-              <div className="delivery-fee">
-                <p>
-                  Delivery Fee <br />
-                  <span>85 php</span>
-                </p>
-              </div>
-              <div className="grand-total">
-                <p>
-                  Grand Total <br />
-                  <span>1,350 php</span>
-                </p>
-              </div>
-            </Col>
-            <Col xs={8} md={4}>
-              <div className="customer-info">
-                <li>
-                  Customer Name: <span>Brandon Boyd</span>
-                </li>
-                <li>
-                  Contact Number: <span>0917 123 4567</span>
-                </li>
-                <li>
-                  Pick up Address :
-                  <span>
-                    Chan's Chinese Restaurant, Panglao, Bohol, Philippines
-                  </span>
-                </li>
-                <li>
-                  Delivery Address:
-                  <span>
-                    4117 41st Floor., GT Tower Intl., De La Costa, Makati City
-                  </span>
-                </li>
-                <li>
-                  Order Placed Time: <span>01:30pm</span>
-                </li>
-                <li>
-                  Order Status: <span>Order Received</span>
-                  <img src={OrderReceivedIcon} />
-                </li>
-
-                <div className="decline-accept">
-                  <a>Decline</a>
-                  <a>Accept</a>
-                </div>
-              </div>
-            </Col>
-          </Row>
-
-          <Row className="mx-md-3">
-            <Col xs={3} md={2} className="d-flex flex-column gap-1">
-              <div className="order-id">
-                <p>ORDER ID: XRF123</p>
-              </div>
-              <div className="order-items">
-                <ul aria-label="Order Items">
-                  <li>Ramen Noodles(3x)</li>
-                  <li>Milk Tea(2x)</li>
-                  <li>1 Water Melon</li>
-                  <li>1 Boba Soya</li>
-                  <li>Pecking Duck (1x)</li>
-                  <li>Pecking Duck (1x)</li>
-                  <li>Pecking Duck (1x)</li>
-                  <li>Pecking Duck (1x)</li>
-                  <li>Pecking Duck (1x)</li>
-                </ul>
-              </div>
-              <div className="delivery-fee">
-                <p>
-                  Delivery Fee <br />
-                  <span>85 php</span>
-                </p>
-              </div>
-              <div className="grand-total">
-                <p>
-                  Grand Total <br />
-                  <span>1,350 php</span>
-                </p>
-              </div>
-            </Col>
-            <Col xs={8} md={4}>
-              <div className="customer-info">
-                <li>
-                  Customer Name: <span>Brandon Boyd</span>
-                </li>
-                <li>
-                  Contact Number: <span>0917 123 4567</span>
-                </li>
-                <li>
-                  Pick up Address :
-                  <span>
-                    Chan's Chinese Restaurant, Panglao, Bohol, Philippines
-                  </span>
-                </li>
-                <li>
-                  Delivery Address:
-                  <span>
-                    4117 41st Floor., GT Tower Intl., De La Costa, Makati City
-                  </span>
-                </li>
-                <li>
-                  Order Placed Time: <span>01:30pm</span>
-                </li>
-                <li>
-                  Order Status: <span>Order Received</span>
-                  <img src={OrderReceivedIcon} />
-                </li>
-
-                <div className="decline-accept">
-                  <a>Decline</a>
-                  <a>Accept</a>
-                </div>
-              </div>
-            </Col>
-          </Row>
-        </Container>
-      </Modal.Body>
-      <Modal.Footer>
-        {/* <button onClick={props.onHide}>Close</button> */}
-      </Modal.Footer>
-    </Modal>
-  );
-}
-
-const OrderHistoryContent = () => {
-  const [modalShow, setModalShow] = React.useState(false);
+const OrderHistoryContent: React.FC<ContainerProps> = ({}) => {
   const [modalShow1, setModalShow1] = React.useState(false);
   const [modalShow2, setModalShow2] = React.useState(false);
+  const {
+    getForDelivery,
+    getForDeliveryOTW,
+    getOrderCompleted,
+    getOrderCanceled,
+  } = useRiderOTW();
 
-  const navigate = useNavigate();
+  const { getAllOrders } = useGetOrderStatus();
 
-  const navigateToDelivery = () => {
-    navigate("/account/for-delivery");
+  const [allOrderItem, setAllOrderItem] = useState<GetAllOrderItem[]>([]);
+
+  const [forDelivery, setForDelivery] = useState<ForDeliveryItem[]>([]);
+
+  const [forOrderCompleted, setForOrderCompleted] = useState<
+    ForCompletedItem[]
+  >([]);
+
+  const [forOrderCanceled, setForOrderCanceled] = useState<ForCanceledItem[]>(
+    []
+  );
+
+  const loadOrderForDelivery = async (status: string) => {
+    const params = { status: status };
+    const response = await getForDeliveryOTW(params);
+    console.log("getForDelivery", response);
+    setForDelivery(response.data);
   };
+
+  const loadOrderCompleted = async (status: string) => {
+    const params = { status: status };
+    const response = await getOrderCompleted(params);
+    console.log("getOrderCompleted", response);
+    setForOrderCompleted(response.data);
+  };
+
+  const loadOrderCanceled = async (status: string) => {
+    const params = { status: status };
+    const response = await getOrderCanceled(params);
+    console.log("getOrderCanceled", response);
+    setForOrderCanceled(response.data);
+  };
+
+  useEffect(() => {
+    // handleGetForDelivery();
+    loadOrderForDelivery("preparing");
+    // loadOrderForDelivery("pending");
+    loadOrderCompleted("delivered");
+    loadOrderCanceled("canceled");
+  }, []);
+
+  const [inputText, setInputText] = useState("");
+  let inputHandler = (e: any) => {
+    //convert input text to lower case
+    var lowerCase = e.target.value.toLowerCase();
+    setInputText(lowerCase);
+  };
+
+  function CompletedModal(props: any) {
+    return (
+      <Modal
+        {...props}
+        size="lg"
+        aria-labelledby="contained-modal-title-vcenter"
+        centered
+      >
+        <Modal.Header closeButton className="px-4">
+          <Modal.Title id="contained-modal-title-vcenter" className="ms-auto">
+            COMPLETED
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-0">
+          {forOrderCompleted?.map((item, index) => {
+            return (
+              <Container
+                className={`${styles.orderDeliveryContainer} d-flex flex-column gap-2`}
+                // className="order-delivery-container d-flex flex-column gap-2"
+                fluid
+                key={index}
+              >
+                <Table size="sm">
+                  <thead className={styles.tableHead}>
+                    <tr className={styles.tableHeader}>
+                      <th>Order ID</th>
+                      <th>Date</th>
+                      <th>Order Placed Time</th>
+                      <th>Ordered Delivered</th>
+                      <th>Rider Name</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className={styles.orderId}>{item.id}</td>
+                      <td>{item.created_at.split(".")[0].slice(0, -3)}</td>
+                      <td>{item.created_at.split(".")[0].slice(0, -3)}</td>
+                      <td>{item.delivered_at.split(".")[0].slice(0, -3)}</td>
+                      <td>{item.rider_name}</td>
+                    </tr>
+                  </tbody>
+                </Table>
+              </Container>
+            );
+          })}
+        </Modal.Body>
+        <Modal.Footer>
+          {/* <button onClick={props.onHide}>Close</button> */}
+        </Modal.Footer>
+      </Modal>
+    );
+  }
+
+  function CancelledModal(props: any) {
+    const { show, handleClose, handleShow } = props;
+    return (
+      <Modal
+        {...props}
+        size="lg"
+        aria-labelledby="contained-modal-title-vcenter"
+        centered
+      >
+        <Modal.Header closeButton className="px-4">
+          <Modal.Title id="contained-modal-title-vcenter" className="ms-auto">
+            CANCELLED
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-0">
+          {forOrderCanceled?.map((item, index) => {
+            return (
+              <Container
+                className={`${styles.orderDeliveryContainer} d-flex flex-column gap-2`}
+                // className="order-delivery-container d-flex flex-column gap-2"
+                fluid
+                key={index}
+              >
+                <Table size="sm">
+                  <thead className={styles.tableHead}>
+                    <tr className={styles.tableHeader}>
+                      <th>Order ID</th>
+                      <th>Date</th>
+                      <th>Order Placed Time</th>
+                      <th>Ordered Delivered</th>
+                      <th>Rider Name</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className={styles.orderId}>{item.id}</td>
+                      <td>{item.created_at.split(".")[0].slice(0, -3)}</td>
+                      <td>{item.created_at.split(".")[0].slice(0, -3)}</td>
+                      <td>{item.delivered_at}</td>
+                      <td>{item.rider_name}</td>
+                    </tr>
+                  </tbody>
+                </Table>
+              </Container>
+            );
+          })}
+        </Modal.Body>
+        <Modal.Footer>
+          {/* <button onClick={props.onHide}>Close</button> */}
+        </Modal.Footer>
+      </Modal>
+    );
+  }
   return (
-    <div className="order-history-container">
-      <div className="table-container-history">
-        <div className="table-header">
-          <div className="table-header-1">
-            <h3>History</h3>
-            <div className="search">
-              <input type="text" placeholder="Search food and description" />
-              <img src={SearchIcon} alt="" />
-            </div>
-          </div>
-        </div>
-        {/* Mobile */}
-        <Container
-          className="order-delivery-container d-flex flex-column gap-3 d-md-none"
-          fluid
-        >
-          <Row className="mx-md-3">
-            <Col xs={3} md={2} className="d-flex flex-column gap-1">
-              <div className="order-id">
-                <p>ORDER ID: XRF123</p>
-              </div>
-              <div className="order-items">
-                <ul aria-label="Order Items">
-                  <li>Ramen Noodles(3x)</li>
-                  <li>Milk Tea(2x)</li>
-                  <li>1 Water Melon</li>
-                  <li>1 Boba Soya</li>
-                  <li>Pecking Duck (1x)</li>
-                </ul>
-              </div>
-              <div className="delivery-fee">
-                <p>
-                  Delivery Fee <br />
-                  <span>85 php</span>
-                </p>
-              </div>
-              <div className="grand-total">
-                <p>
-                  Grand Total <br />
-                  <span>1,350 php</span>
-                </p>
-              </div>
-            </Col>
-            <Col xs={8} md={4}>
-              <div className="customer-info">
-                <li>
-                  Customer Name: <span>Brandon Boyd</span>
-                </li>
-                <li>
-                  Contact Number: <span>0917 123 4567</span>
-                </li>
-                <li>
-                  Pick up Address :
-                  <span>
-                    Chan's Chinese Restaurant, Panglao, Bohol, Philippines
-                  </span>
-                </li>
-                <li>
-                  Delivery Address:
-                  <span>
-                    4117 41st Floor., GT Tower Intl., De La Costa, Makati City
-                  </span>
-                </li>
-                <li>
-                  Order Placed Time: <span>01:30pm</span>
-                </li>
-                <li>
-                  Order Status: <span>Order Received</span>
-                  <img src={OrderReceivedIcon} />
-                </li>
-
-                <div className="decline-accept">
-                  <a>Decline</a>
-                  <a>Accept</a>
-                </div>
-              </div>
+    <div className={styles.container}>
+      <h3>History</h3>
+      <div className={styles.innerContainer}>
+        {/* <Form>
+          <Row className="">
+            <Col>
+              <Form.Control
+                className={styles.searchBar}
+                type="text"
+                placeholder="Search food and description"
+              />
             </Col>
           </Row>
+        </Form> */}
+        {forOrderCompleted.map((item, index) => {
+          return (
+            <div className={styles.item} key={index}>
+              <Row>
+                {/* Main content */}
+                <Col lg={{ span: 12 }}>
+                  <Row>
+                    {/* Order ID */}
+                    <Col md={3}>
+                      <div className={styles.flexOnMobile}>
+                        <div className={styles.orderId}>
+                          <h6 className="text-center text-uppercase">
+                            Order ID : {item.id}
+                          </h6>
+                        </div>
 
-          <Row className="mx-md-3">
-            <Col xs={3} md={2} className="d-flex flex-column gap-1">
-              <div className="order-id">
-                <p>ORDER ID: XRF123</p>
-              </div>
-              <div className="order-items">
-                <ul aria-label="Order Items">
-                  <li>Ramen Noodles(3x)</li>
-                  <li>Milk Tea(2x)</li>
-                  <li>1 Water Melon</li>
-                  <li>1 Boba Soya</li>
-                  <li>Pecking Duck (1x)</li>
-                  <li>Pecking Duck (1x)</li>
-                  <li>Pecking Duck (1x)</li>
-                  <li>Pecking Duck (1x)</li>
-                  <li>Pecking Duck (1x)</li>
-                </ul>
-              </div>
-              <div className="delivery-fee">
-                <p>
-                  Delivery Fee <br />
-                  <span>85 php</span>
-                </p>
-              </div>
-              <div className="grand-total">
-                <p>
-                  Grand Total <br />
-                  <span>1,350 php</span>
-                </p>
-              </div>
-            </Col>
-            <Col xs={8} md={4}>
-              <div className="customer-info">
-                <li>
-                  Customer Name: <span>Brandon Boyd</span>
-                </li>
-                <li>
-                  Contact Number: <span>0917 123 4567</span>
-                </li>
-                <li>
-                  Pick up Address :
-                  <span>
-                    Chan's Chinese Restaurant, Panglao, Bohol, Philippines
-                  </span>
-                </li>
-                <li>
-                  Delivery Address:
-                  <span>
-                    4117 41st Floor., GT Tower Intl., De La Costa, Makati City
-                  </span>
-                </li>
-                <li>
-                  Order Placed Time: <span>01:30pm</span>
-                </li>
-                <li>
-                  Order Status: <span>Order Received</span>
-                  <img src={OrderReceivedIcon} />
-                </li>
+                        <div className={styles.btnView}>
+                          <Link to={`/account/order-history/${item.id}`}>
+                            View Details
+                          </Link>
+                        </div>
+                      </div>
+                    </Col>
 
-                <div className="decline-accept">
-                  <a>Decline</a>
-                  <a>Accept</a>
-                </div>
-              </div>
-            </Col>
-          </Row>
-        </Container>
-        {/* Desktop */}
-        <Container className="order-delivery-container-desktop" fluid>
-          <Row className="mx-md-3">
-            <Col md={2} className="d-flex flex-column gap-1">
-              <div className="order-id">
-                <p>ORDER ID: XRF123</p>
-              </div>
-              {/* <div className="order-items">
-              <ul aria-label="Order Items">
-                <li>Ramen Noodles(3x)</li>
-                <li>Milk Tea(2x)</li>
-                <li>1 Water Melon</li>
-                <li>1 Boba Soya</li>
-                <li>Pecking Duck (1x)</li>
-              </ul>
-            </div>
-            <div className="delivery-fee">
-              <p>
-                Delivery Fee <br />
-                <span>85 php</span>
-              </p>
-            </div>
-            <div className="grand-total">
-              <p>
-                Grand Total <br />
-                <span>1,350 php</span>
-              </p>
-            </div> */}
-            </Col>
-            <Col md={4}>
-              <div className="customer-info">
-                <Row>
-                  <Col md={8}>
-                    <div className="d-flex gap-5">
-                      <li>
-                        Customer Name: <span>Brandon Boyd</span>
-                      </li>
-                      <li>
-                        Contact Number: <span>0917 123 4567</span>
-                      </li>
-                    </div>
-                    <li>
-                      Pick up Address :
-                      <span>
-                        Chan's Chinese Restaurant, Panglao, Bohol, Philippines
-                      </span>
-                    </li>
-                    <li>
-                      Delivery Address:
-                      <span>
-                        4117 41st Floor., GT Tower Intl., De La Costa, Makati
-                        City
-                      </span>
-                    </li>
-                    <li>
-                      Order Placed Time: <span>01:30pm</span>
-                    </li>
-                  </Col>
-                  <Col>
-                    <li className="d-flex flex-column justify-content-center align-items-center">
-                      Order Status: <span>Order Received</span>
-                      <img src={OrderReceivedIcon} />
-                    </li>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col md={3}>
-                    <div className="order-items overflow-auto">
-                      <ul aria-label="Order Items">
-                        <li>Ramen Noodles(3x)</li>
-                        <li>Milk Tea(2x)</li>
-                        <li>1 Water Melon</li>
-                        <li>1 Boba Soya</li>
-                        <li>Pecking Duck (1x)</li>
-                      </ul>
-                    </div>
-                  </Col>
-                  <Col md={3}>
-                    <div className="delivery-fee">
-                      <p>
-                        Delivery Fee <br />
-                        <span>85 php</span>
-                      </p>
-                      <div className="decline-accept">
-                        <a>Decline</a>
-                      </div>
-                    </div>
-                  </Col>
-                  <Col md={3}>
-                    <div className="grand-total">
-                      <p>
-                        Grand Total <br />
-                        <span>1,350 php</span>
-                      </p>
-                      <div className="decline-accept">
-                        <a>Accept</a>
-                      </div>
-                    </div>
-                  </Col>
-                </Row>
-              </div>
-            </Col>
-          </Row>
+                    {/* Order information */}
+                    <Col md={9}>
+                      <div className={styles.orderDetails}>
+                        <Row>
+                          <Col>
+                            {/* Customer name & contact number */}
+                            <Row sm={2} xs={1} className="mb-0 mb-sm-3">
+                              <Col>
+                                <Row className="mb-2 mb-sm-0">
+                                  <Col xs={5} sm={6}>
+                                    <p>Customer Name :</p>
+                                  </Col>
+                                  <Col xs={7} sm={6}>
+                                    <p className={styles.value}>
+                                      {item.customer_name}
+                                    </p>
+                                  </Col>
+                                </Row>
+                              </Col>
+                              <Col>
+                                <Row className="mb-2 mb-sm-0">
+                                  <Col xs={5} sm={6}>
+                                    <p>Contact Number :</p>
+                                  </Col>
+                                  <Col xs={7} sm={6}>
+                                    <p className={styles.value}>
+                                      {item.customer_mobile}
+                                    </p>
+                                  </Col>
+                                </Row>
+                              </Col>
+                            </Row>
 
-          <Row className="mx-md-3">
-            <Col md={2} className="d-flex flex-column gap-1">
-              <div className="order-id">
-                <p>ORDER ID: XRF123</p>
-              </div>
-              {/* <div className="order-items">
-              <ul aria-label="Order Items">
-                <li>Ramen Noodles(3x)</li>
-                <li>Milk Tea(2x)</li>
-                <li>1 Water Melon</li>
-                <li>1 Boba Soya</li>
-                <li>Pecking Duck (1x)</li>
-              </ul>
-            </div>
-            <div className="delivery-fee">
-              <p>
-                Delivery Fee <br />
-                <span>85 php</span>
-              </p>
-            </div>
-            <div className="grand-total">
-              <p>
-                Grand Total <br />
-                <span>1,350 php</span>
-              </p>
-            </div> */}
-            </Col>
-            <Col md={4}>
-              <div className="customer-info">
-                <Row>
-                  <Col md={8}>
-                    <div className="d-flex gap-5">
-                      <li>
-                        Customer Name: <span>Brandon Boyd</span>
-                      </li>
-                      <li>
-                        Contact Number: <span>0917 123 4567</span>
-                      </li>
-                    </div>
-                    <li>
-                      Pick up Address :
-                      <span>
-                        Chan's Chinese Restaurant, Panglao, Bohol, Philippines
-                      </span>
-                    </li>
-                    <li>
-                      Delivery Address:
-                      <span>
-                        4117 41st Floor., GT Tower Intl., De La Costa, Makati
-                        City
-                      </span>
-                    </li>
-                    <li>
-                      Order Placed Time: <span>01:30pm</span>
-                    </li>
-                  </Col>
-                  <Col>
-                    <li className="d-flex flex-column justify-content-center align-items-center">
-                      Order Status: <span>Order Received</span>
-                      <img src={OrderReceivedIcon} />
-                    </li>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col md={3}>
-                    <div className="order-items overflow-auto">
-                      <ul aria-label="Order Items">
-                        <li>Ramen Noodles(3x)</li>
-                        <li>Milk Tea(2x)</li>
-                        <li>1 Water Melon</li>
-                        <li>1 Boba Soya</li>
-                        <li>Pecking Duck (1x)</li>
-                      </ul>
-                    </div>
-                  </Col>
-                  <Col md={3}>
-                    <div className="delivery-fee">
-                      <p>
-                        Delivery Fee <br />
-                        <span>85 php</span>
-                      </p>
-                      <div className="decline-accept">
-                        <a>Decline</a>
+                            {/* Pick up address */}
+                            <Row className="mb-2 mb-sm-3">
+                              <Col sm={3} xs={5}>
+                                <p>Pick up Address :</p>
+                              </Col>
+                              <Col sm={9} xs={7}>
+                                <p className={styles.value}>
+                                  {item.restaurant_address}
+                                </p>
+                              </Col>
+                            </Row>
+
+                            {/* Delivery address */}
+                            <Row className="mb-2 mb-sm-3">
+                              <Col sm={3} xs={5}>
+                                <p>Delivery Address :</p>
+                              </Col>
+                              <Col sm={9} xs={7}>
+                                <p className={styles.value}>
+                                  {item.order_address}
+                                </p>
+                              </Col>
+                            </Row>
+
+                            {/* Order placed & delivered time */}
+                            <Row sm={2} xs={1} className="mb-0 mb-sm-3">
+                              <Col>
+                                <Row className="mb-2 mb-sm-0">
+                                  <Col xs={5} sm={6}>
+                                    <p>Order Placed Time: </p>
+                                  </Col>
+                                  <Col xs={7} sm={6}>
+                                    <p className={styles.value}>
+                                      {/* {getTime(item.created_at)} */}
+                                      {item.created_at
+                                        .split(".")[0]
+                                        .slice(0, -3)}
+                                    </p>
+                                  </Col>
+                                </Row>
+                              </Col>
+                              <Col>
+                                <Row className="mb-2 mb-sm-0">
+                                  <Col xs={5} sm={6}>
+                                    <p>Order Delivered Time :</p>
+                                  </Col>
+                                  <Col xs={7} sm={6}>
+                                    <p className={styles.value}>
+                                      {/* {item.delivered_at
+                                        ? getTime(item.delivered_at)
+                                        : "Waiting ..."} */}
+                                      {item.delivered_at
+                                        .split(".")[0]
+                                        .slice(0, -3)}
+                                    </p>
+                                  </Col>
+                                </Row>
+                              </Col>
+                            </Row>
+
+                            {/* Date ordered & View details */}
+                            <Row sm={2} xs={1}>
+                              <Col>
+                                <Row>
+                                  <Col xs={5} sm={6}>
+                                    <p>Date Ordered :</p>
+                                  </Col>
+                                  <Col xs={7} sm={6}>
+                                    <p className={styles.value}>
+                                      {/* {getDate(item.created_at)} */}
+                                      {item.created_at
+                                        .split(".")[0]
+                                        .slice(0, -3)}
+                                    </p>
+                                  </Col>
+                                </Row>
+                              </Col>
+
+                              {/* View details - medium screens up */}
+                              <Col className="d-none d-md-block">
+                                <Row>
+                                  <Col>
+                                    <div className={styles.btnView}>
+                                      <Link
+                                        to={`/account/order-history/${item.id}`}
+                                      >
+                                        View Details
+                                      </Link>
+                                    </div>
+                                  </Col>
+                                </Row>
+                              </Col>
+                            </Row>
+                          </Col>
+                        </Row>
                       </div>
-                    </div>
-                  </Col>
-                  <Col md={3}>
-                    <div className="grand-total">
-                      <p>
-                        Grand Total <br />
-                        <span>1,350 php</span>
-                      </p>
-                      <div className="decline-accept">
-                        <a>Accept</a>
-                      </div>
-                    </div>
-                  </Col>
-                </Row>
-              </div>
-            </Col>
-          </Row>
-        </Container>
-        <div className="delivery-buttons">
-          <a onClick={navigateToDelivery}>For delivery</a>
-          {/* <DeliveryModal show={modalShow} onHide={() => setModalShow(false)} /> */}
-          <a onClick={() => setModalShow1(true)}>Completed</a>
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
+            </div>
+          );
+        })}
+        <div className={styles.bottomBtn}>
+          <Button onClick={() => setModalShow1(true)}>Completed</Button>
           <CompletedModal
             show={modalShow1}
             onHide={() => setModalShow1(false)}
           />
-          <a onClick={() => setModalShow2(true)}>Cancelled</a>
+          <Button onClick={() => setModalShow2(true)}>Cancelled</Button>
           <CancelledModal
             show={modalShow2}
             onHide={() => setModalShow2(false)}
           />
-        </div>
-
-        <div className="rewards-container">
-          <div className="rewards-btn">
-            <a>Rewards</a>
-            <img src={RewardsIcon} alt="" />
-          </div>
         </div>
       </div>
     </div>

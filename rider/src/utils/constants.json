@@ -11,11 +11,18 @@
       "email": "*Please enter a valid email.",
       "mobile": "*Invalid mobile number.",
       "notNumber": "*Invalid number.",
-      "firstNameMin": "*First name must be at least 6 characters.",
+      "firstNameMin": "*First name must be at least 2 characters.",
       "lastNameMin": "*Last name must be at least 6 characters.",
+      "fullNameMin": "*Full name must be at least 6 characters",
       "passwordMin": "*Password must be at least 6 characters.",
       "passwordMax": "*Password must be at most 16 characters.",
-      "passwordConfirm": "*Password don't match."
+      "passwordConfirm": "*Password don't match.",
+      "missingOtp": "Please input your OTP code."
+    },
+    "success": {
+      "updateProfile": "Customer profile updated successfully!",
+      "updatePassword": "You have successfully changed your password!"
     }
-  }
+  },
+  "otpCountdown": 300
 }

@@ -1,6 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Container, Row, Col, Button, Form } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { useUser } from "../../../hooks/useUser";
+
+import styles from "./ProfileForm.module.scss";
+import constants from "../../../utils/constants.json";
 
 import "./ProfileContent.scss";
 
@@ -9,25 +16,145 @@ import bike2 from "../../../assets/images/bike2.png";
 import bike3 from "../../../assets/images/bike3.png";
 import bike4 from "../../../assets/images/bike4.png";
 import bike5 from "../../../assets/images/bike5.png";
+import { string } from "yup/lib/locale";
+
+// Setup form schema & validation
+interface IFormInputs {
+  first_name: string;
+  last_name: string;
+  full_name: string;
+  mobile: string;
+  email: string;
+  address: string;
+  brand: string;
+  model: string;
+  or_number: string;
+  plate_number: string;
+  license_expiration: string;
+  license_number: string;
+  // license_type: string;
+  // year: string;
+}
+
+const schema = yup
+  .object({
+    first_name: yup
+      .string()
+      .min(6, constants.form.error.firstNameMin)
+      .required(),
+    last_name: yup.string().min(2, constants.form.error.lastNameMin).required(),
+    address: yup.string().required(),
+    mobile: yup.string().required(),
+    email: yup.string().email(constants.form.error.email).required(),
+    brand: yup.string().required(),
+    model: yup.string().required(),
+    or_number: yup.string().required(),
+    plate_number: yup.string().required(),
+    license_expiration: yup.string().required(),
+    license_number: yup.string().required(),
+    // license_type: yup.string().required(),
+    // year: yup.string().required(),
+  })
+  .required();
 
 interface ContainerProps {}
 
 const ProfileContent: React.FC<ContainerProps> = ({}) => {
-  const [isEdit, setIsEdit] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const navigate = useNavigate();
+  const [disabled, setDisabled] = useState(true);
+
+  const handleInput = () => {
+    setDisabled(!disabled);
+  };
+
+  const saveAlert = () => {
+    alert("Profile has been updated.");
+  };
+
+  const { getUser, updateUser } = useUser();
+
+  const {
+    reset,
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<IFormInputs>({
+    resolver: yupResolver(schema),
+  });
+
+  const onSubmit = async (data: IFormInputs) => {
+    console.log("Requesting updateUser ...");
+
+    const response = await updateUser(data);
+    console.log("updateUser response", response);
+
+    if (!response.error) {
+      setMessage(constants.form.success.updateProfile);
+    } else {
+      setError(response.error);
+    }
+  };
+
+  // Get user request
+  const handleGetUser = async () => {
+    console.log("Requesting getUser ...");
+
+    const response = await getUser();
+    console.log("handleGetUser response", response);
+    let defaultValues = {
+      first_name: response.first_name,
+      last_name: response.last_name,
+      address: response.rider.address,
+      email: response.email,
+      mobile: response.mobile,
+      brand: response.rider.brand,
+      model: response.rider.model,
+      or_number: response.rider.or_number,
+      plate_number: response.rider.plate_number,
+      license_expiration: response.rider.license_expiration,
+      license_number: response.rider.license_number,
+      // license_type: response.rider.license_type,
+      // year: response.rider.year,
+    };
+
+    reset(defaultValues);
+  };
+
+  useEffect(() => {
+    handleGetUser();
+  }, []);
 
   return (
     <div className="profile-content-container">
       <div className="right">
         <h3>My Account</h3>
-        <Form>
+        <Form onSubmit={handleSubmit(onSubmit)}>
           <Row lg={2} xs={1}>
             <Col>
               <Form.Group className="position-relative">
-                <Form.Label>Full name</Form.Label>
+                <Form.Label>First name</Form.Label>
                 <Form.Control
-                  id="full_name"
+                  id="first_name"
                   type="text"
-                  placeholder="Alexan Louis Torio"
+                  onKeyUp={() => setError("")}
+                  required
+                  {...register("first_name")}
+                  // disabled={disabled}
+                />
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group className="position-relative">
+                <Form.Label>Last name</Form.Label>
+                <Form.Control
+                  id="last_name"
+                  type="text"
+                  onKeyUp={() => setError("")}
+                  required
+                  {...register("last_name")}
+                  // disabled={disabled}
                 />
               </Form.Group>
             </Col>
@@ -35,55 +162,27 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
           <Row lg={2} xs={1}>
             <Col>
               <Form.Group className="position-relative">
-                <Form.Label>Motor Vehicle</Form.Label>
+                <Form.Label>Address</Form.Label>
                 <Form.Control
-                  id="motor_vehicle"
+                  id="address"
                   type="text"
-                  placeholder="Yamaha T-MAX 2022"
+                  onKeyUp={() => setError("")}
+                  required
+                  {...register("address")}
+                  // disabled={disabled}
                 />
               </Form.Group>
             </Col>
-          </Row>
-          <Row lg={2} xs={1}>
+
             <Col>
               <Form.Group className="position-relative">
-                <Form.Label>Building number and Name</Form.Label>
+                <Form.Label>Contact Number</Form.Label>
                 <Form.Control
-                  id="building_details"
-                  type="text"
-                  placeholder="Unit 123, GT Tower Intl. "
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group className="position-relative">
-                <Form.Label>Street Name and Barangay</Form.Label>
-                <Form.Control
-                  id="street_details"
-                  type="text"
-                  placeholder="Ayala Avenue, Brgy Poblacion"
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row lg={2} xs={1}>
-            <Col>
-              <Form.Group className="position-relative">
-                <Form.Label>City or Town, Pincode</Form.Label>
-                <Form.Control
-                  id="city_details"
-                  type="text"
-                  placeholder="Makati City 4114"
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group className="position-relative">
-                <Form.Label>Landmark</Form.Label>
-                <Form.Control
-                  id="landmark"
-                  type="text"
-                  placeholder="In front of RCBC tower "
+                  type="mobile"
+                  onKeyUp={() => setError("")}
+                  required
+                  {...register("mobile")}
+                  // disabled={disabled}
                 />
               </Form.Group>
             </Col>
@@ -93,39 +192,104 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
               <Form.Group className="position-relative">
                 <Form.Label>Email</Form.Label>
                 <Form.Control
-                  id="email"
-                  type="text"
-                  placeholder="JohnDoe2022@gmail.com"
+                  type="email"
+                  onKeyUp={() => setError("")}
+                  required
+                  {...register("email")}
+                  // disabled={disabled}
                 />
               </Form.Group>
             </Col>
             <Col>
-              <Form.Group className="position-relative">
-                <Form.Label>Contact Number</Form.Label>
+              <Form.Group className="position-relative d-none d-md-block">
+                <Form.Label>Driver's License Expiration Date</Form.Label>
                 <Form.Control
-                  id="contact_number"
                   type="text"
-                  placeholder="(+63) 917 456 7890"
+                  onKeyUp={() => setError("")}
+                  required
+                  {...register("license_expiration")}
+                  // disabled={disabled}
                 />
               </Form.Group>
             </Col>
           </Row>
+          <Row lg={2} xs={1}>
+            <Col>
+              <Form.Group className="position-relative">
+                <Form.Label>Brand</Form.Label>
+                <Form.Control
+                  id="year"
+                  type="text"
+                  {...register("brand")}
+                  // disabled={disabled}
+                />
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group className="position-relative d-none d-md-block">
+                <Form.Label>Driver's License Number</Form.Label>
+                <Form.Control
+                  type="text"
+                  {...register("license_number")}
+                  // disabled={disabled}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row lg={2} xs={1}>
+            <Col>
+              <Form.Group className="position-relative">
+                <Form.Label>Model</Form.Label>
+                <Form.Control
+                  id="model"
+                  type="text"
+                  {...register("model")}
+                  // disabled={disabled}
+                />
+              </Form.Group>
+              <Form.Group className="position-relative">
+                <Form.Label>OR Number</Form.Label>
+                <Form.Control
+                  id="or_number"
+                  type="text"
+                  {...register("or_number")}
+                  // disabled={disabled}
+                />
+              </Form.Group>
+              <Form.Group className="position-relative">
+                <Form.Label>Plate Number</Form.Label>
+                <Form.Control
+                  id="plate_number"
+                  type="text"
+                  {...register("plate_number")}
+                  // disabled={disabled}
+                />
+              </Form.Group>
+            </Col>
 
-          <div className="bike-images">
-            <img src={bike1} alt="" />
-            <img src={bike2} alt="" />
-            <img src={bike3} alt="" />
-            <img src={bike4} alt="" />
-            <img src={bike5} alt="" className="d-none d-md-block" />
-          </div>
+            {/* <Col className="bike-images">
+              <img src={bike1} alt="" />
+              <img src={bike2} alt="" />
+              <img src={bike3} alt="" />
+              <img src={bike4} alt="" />
 
+              <div className="px-4 d-none d-lg-block">
+                <Button>Upload</Button>
+              </div>
+            </Col> */}
+          </Row>
           <div className="buttons">
-            <a id="saveBtn" href="#">
-              Edit
-            </a>
-            <a id="editBtn" href="#">
+            {/* <Button id="editBtn" onClick={handleInput} className="d-lg-none">
+              Upload
+            </Button> */}
+            <Button
+              id="saveBtn"
+              type="submit"
+              onClick={saveAlert}
+              className="mt-5"
+            >
               Save
-            </a>
+            </Button>
           </div>
         </Form>
       </div>

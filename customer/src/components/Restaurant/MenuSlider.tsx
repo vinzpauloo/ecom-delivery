@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "react-bootstrap";
 import { Dash, Plus } from "react-bootstrap-icons";
 
@@ -14,44 +14,105 @@ import "swiper/scss/navigation";
 import { Grid, Navigation } from "swiper";
 
 import styles from "./MenuSlider.module.scss";
+import placeholder from "../../assets/images/placeholder.png";
 
 interface ContainerProps {
-  slides: Slide[];
+  slides: Slide[] | null;
+  setCart: React.Dispatch<React.SetStateAction<TCart[]>>;
 }
 
 type Slide = {
-  image: string;
-  title: string;
+  id: number;
+  name: string;
   description: string;
+  price: number;
+  photo: string;
+  is_available: number;
 };
 
-const SwiperSlideItem = (item: Slide, index: number) => {
+type TCart = {
+  id: number;
+  name: string;
+  price: number;
+  photo: string;
+  quantity: number;
+};
+
+const SwiperSlideItem = (
+  item: Slide,
+  index: number,
+  setCart: ContainerProps["setCart"]
+) => {
+  const [quantity, setQuantity] = useState(1);
+
+  const handleAddToCart = () => {
+    const newItem = {
+      id: item.id,
+      name: item.name,
+      photo: item.photo,
+      price: item.price,
+      quantity: quantity,
+    };
+
+    setCart((cart) => {
+      const cartCopy = cart.slice();
+      const index = cartCopy.findIndex((product) => newItem.id === product.id);
+
+      if (index === -1) {
+        cartCopy.push({ ...newItem });
+      } else {
+        const pr = cartCopy[index];
+        cartCopy[index] = { ...pr, quantity: pr.quantity + newItem.quantity };
+      }
+
+      return cartCopy;
+    });
+
+    setQuantity(1);
+
+    console.log("Added new item in cart ...");
+    console.log(newItem);
+  };
+
   return (
     <SwiperSlide key={index} className={styles.swiperSlide}>
       <div className={styles.slideItem}>
         <div className={styles.slideImageContainer}>
-          <img src={item.image} alt="" />
+          {item.photo == "no-images.jpg" ? (
+            <img className={styles.placeholder} src={placeholder} alt="" />
+          ) : (
+            // <img src={process.env.REACT_APP_BASE_URL + item.photo} alt="" />
+            <img src={item.photo} alt="" />
+          )}
         </div>
         <div className={styles.slideContentContainer}>
-          <p className={styles.slideTitle}>{item.title}</p>
+          <p className={styles.slideTitle}>{item.name}</p>
           <p className={styles.slideDescription}>{item.description}</p>
-          <p className={styles.slidePrice}>423php</p>
+          <p className={styles.slidePrice}>{item.price}php</p>
           <div
             className={`d-flex justify-content-between ${styles.slideOptions}`}
           >
             <div
-              className={`d-flex justify-content-center align-items-center ${styles.qty}`}
+              className={`d-flex justify-content-center align-items-center ${styles.quantity}`}
             >
               <Button>
-                <Dash color="#61481C" size={18} />
+                <Dash
+                  color="#61481C"
+                  size={18}
+                  onClick={() => quantity > 1 && setQuantity(quantity - 1)}
+                />
               </Button>
-              <span className={styles.num}>1</span>
+              <span className={styles.num}>{quantity}</span>
               <Button>
-                <Plus color="#61481C" size={18} />
+                <Plus
+                  color="#61481C"
+                  size={18}
+                  onClick={() => setQuantity(quantity + 1)}
+                />
               </Button>
             </div>
             <div className={styles.addToCart}>
-              <Button>Add to cart</Button>
+              <Button onClick={handleAddToCart}>Add to cart</Button>
             </div>
           </div>
         </div>
@@ -60,7 +121,7 @@ const SwiperSlideItem = (item: Slide, index: number) => {
   );
 };
 
-const MenuSlider: React.FC<ContainerProps> = ({ slides }) => {
+const MenuSlider: React.FC<ContainerProps> = ({ slides, setCart }) => {
   return (
     <>
       {/* Desktop version */}
@@ -71,8 +132,8 @@ const MenuSlider: React.FC<ContainerProps> = ({ slides }) => {
         modules={[Navigation]}
         className={`d-none d-lg-block ${styles.sliderContainer}`}
       >
-        {slides.map((item, index) => {
-          return SwiperSlideItem(item, index);
+        {slides?.map((item, index) => {
+          return SwiperSlideItem(item, index, setCart);
         })}
       </Swiper>
 
@@ -94,8 +155,8 @@ const MenuSlider: React.FC<ContainerProps> = ({ slides }) => {
         modules={[Grid]}
         className={`d-lg-none ${styles.sliderContainer}`}
       >
-        {slides.map((item, index) => {
-          return SwiperSlideItem(item, index);
+        {slides?.map((item, index) => {
+          return SwiperSlideItem(item, index, setCart);
         })}
       </Swiper>
     </>

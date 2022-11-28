@@ -1,126 +1,113 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Col, Row } from "react-bootstrap";
-import { Star, StarFill } from "react-bootstrap-icons";
-import { Link } from "react-router-dom";
+import { StarFill } from "react-bootstrap-icons";
+import { useNavigate } from "react-router-dom";
 
 import styles from "./Details.module.scss";
-import CategorySlider from "./CategorySlider";
+import placeholder from "../../assets/images/placeholder.png";
 
-// Sample static images
-import restau01 from "../../assets/images/restau01.png";
-import cuisine01 from "../../assets/images/cuisine01.png";
-import cuisine02 from "../../assets/images/cuisine02.png";
-import cuisine03 from "../../assets/images/cuisine03.png";
-import cuisine04 from "../../assets/images/cuisine04.png";
-import cuisine05 from "../../assets/images/cuisine05.png";
-import cuisine06 from "../../assets/images/cuisine06.png";
-import cuisine07 from "../../assets/images/cuisine07.png";
-import category01 from "../../assets/images/category01.jpg";
-import category02 from "../../assets/images/category02.jpg";
-import category03 from "../../assets/images/category03.jpg";
-import category04 from "../../assets/images/category04.jpg";
-import category05 from "../../assets/images/category05.jpg";
-import category06 from "../../assets/images/category06.jpg";
+import CategorySlider from "./CategorySlider";
 import MenuSlider from "./MenuSlider";
 import CartSlider from "./CartSlider";
 
-const menuSlides = [
-  {
-    image: cuisine01,
-    title: "Lorem Ipsum 1 Test long title Test long title Test long title",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-  },
-  {
-    image: cuisine02,
-    title: "Lorem Ipsum 2",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur test long description lorem ipsum test long description lorem ipsum blablabla.",
-  },
-  {
-    image: cuisine03,
-    title: "Lorem Ipsum 3",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-  },
-  {
-    image: cuisine04,
-    title: "Lorem Ipsum 4",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-  },
-  {
-    image: cuisine05,
-    title: "Lorem Ipsum 5",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-  },
-  {
-    image: cuisine06,
-    title: "Lorem Ipsum 6",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-  },
-  {
-    image: cuisine07,
-    title: "Lorem Ipsum 7",
-    description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-  },
-];
+interface ContainerProps {
+  restaurant: TRestaurant | null;
+  menu: TMenu[] | null;
+  categories: TCategory[] | null;
+}
 
-const categoriesSlides = [
-  {
-    image: category01,
-    title: "Family Meals",
-  },
-  {
-    image: category02,
-    title: "Holiday Promos",
-  },
-  {
-    image: category03,
-    title: "Ala Carte",
-  },
-  {
-    image: category04,
-    title: "Milk Shakes",
-  },
-  {
-    image: category05,
-    title: "Beers and Wine",
-  },
-  {
-    image: category06,
-    title: "Others",
-  },
-];
+type TRestaurant = {
+  id: number;
+  name: string;
+  address: string;
+  description: string;
+  contact_number: string;
+  landline: string;
+  photo: string;
+};
 
-const cartSlides = [
-  {
-    image: cuisine02,
-    price: 100,
-    qty: 1,
-  },
-  {
-    image: cuisine03,
-    price: 400,
-    qty: 3,
-  },
-  {
-    image: cuisine01,
-    price: 700,
-    qty: 5,
-  },
-  {
-    image: cuisine05,
-    price: 300,
-    qty: 4,
-  },
-  {
-    image: cuisine07,
-    price: 900,
-    qty: 7,
-  },
-];
+type TMenu = {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  photo: string;
+  is_available: number;
+};
 
-interface ContainerProps {}
+type TCart = {
+  id: number;
+  name: string;
+  price: number;
+  photo: string;
+  quantity: number;
+};
 
-const Details: React.FC<ContainerProps> = ({}) => {
+type TCategory = {
+  id: number;
+  name: string;
+  photo: string;
+};
+
+const Details: React.FC<ContainerProps> = ({
+  restaurant,
+  menu,
+  categories,
+}) => {
+  const [cart, setCart] = useState<TCart[]>([]);
+  const [itemCount, setItemCount] = useState(0);
+  const [subtotal, setSubtotal] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [deliveryFee, setDeliveryFee] = useState(86);
+  const navigate = useNavigate();
+
+  const getItemCount = () => {
+    const initialValue = 0;
+    return cart.reduce((prev, cur) => prev + cur.quantity, initialValue);
+  };
+
+  const getSubtotal = () => {
+    const initialValue = 0;
+    return cart.reduce(
+      (prev, cur) => prev + cur.quantity * cur.price,
+      initialValue
+    );
+  };
+
+  const updateSummary = () => {
+    setItemCount(getItemCount());
+    setSubtotal(getSubtotal());
+    setTotal(getSubtotal() + deliveryFee);
+  };
+
+  const handleCheckout = () => {
+    console.log("Navigating to checkout page ...");
+
+    const summaryDetails = {
+      itemCount,
+      subtotal,
+      deliveryFee,
+      total,
+    };
+
+    const checkout = {
+      products: cart,
+      summaryDetails,
+      restaurant_id: restaurant?.id,
+    };
+
+    localStorage.setItem("checkout", JSON.stringify(checkout));
+    navigate("/checkout");
+  };
+
+  const handleCancel = () => {
+    navigate("/");
+  };
+
+  useEffect(() => {
+    updateSummary();
+  }, [cart]);
+
   return (
     <div className={styles.container}>
       {/* Restaurant info */}
@@ -131,9 +118,17 @@ const Details: React.FC<ContainerProps> = ({}) => {
           sm={{ span: 8, offset: 2 }}
         >
           <div className={`d-flex gap-2 ${styles.details}`}>
-            <img className="img-fluid" src={restau01} />
+            <img
+              className="img-fluid"
+              src={
+                restaurant
+                  ? // ? process.env.REACT_APP_BASE_URL + restaurant.photo
+                    restaurant.photo
+                  : placeholder
+              }
+            />
             <div>
-              <h3 className="mb-0">Chan’s Chinese Cuisine</h3>
+              <h3 className="mb-0">{restaurant?.name}</h3>
               <div className={`d-md-none ${styles.rating}`}>
                 <StarFill color="#E6B325" size={12} />
                 <StarFill color="#E6B325" size={12} />
@@ -141,13 +136,9 @@ const Details: React.FC<ContainerProps> = ({}) => {
                 <StarFill color="#E6B325" size={12} />
                 <StarFill color="#D9D9D9" size={12} />
               </div>
-              <p className="mb-0">
-                What is the Chan’s Chinese cuisine? Asian Fusion uses
-                traditional Asian-style ingredients, dishes and techniques to
-                create innovative and flavorful new fusions. It is a cuisine
-                style that typically combines Asian foods with the likes of
-                traditional Mexican, American or other Asian-style dishes.
-              </p>
+              <p className="mb-1">{restaurant?.description}</p>
+              <p className="mb-1">Address: {restaurant?.address}</p>
+              <p className="mb-0">Contact #: {restaurant?.contact_number}</p>
             </div>
           </div>
         </Col>
@@ -171,14 +162,14 @@ const Details: React.FC<ContainerProps> = ({}) => {
       {/* Menu slider */}
       <Row className={styles.menu}>
         <Col>
-          <MenuSlider slides={menuSlides} />
+          <MenuSlider slides={menu} setCart={setCart} />
         </Col>
       </Row>
 
       {/* Category filters */}
       <Row className={styles.categories}>
         <Col>
-          <CategorySlider slides={categoriesSlides} />
+          <CategorySlider slides={categories} />
         </Col>
       </Row>
 
@@ -205,7 +196,11 @@ const Details: React.FC<ContainerProps> = ({}) => {
           <h5>Ordered Items</h5>
 
           <div>
-            <CartSlider slides={cartSlides} />
+            {cart && cart.length ? (
+              <CartSlider slides={cart} setCart={setCart} />
+            ) : (
+              <p>Cart is empty</p>
+            )}
           </div>
         </div>
 
@@ -221,7 +216,7 @@ const Details: React.FC<ContainerProps> = ({}) => {
                   <span>Item count</span>
                 </Col>
                 <Col>
-                  <strong>003</strong>
+                  <strong>{itemCount}</strong>
                 </Col>
               </Row>
               <Row className={styles.orderedAmountRow}>
@@ -229,7 +224,7 @@ const Details: React.FC<ContainerProps> = ({}) => {
                   <span>Sub-Total</span>
                 </Col>
                 <Col>
-                  <strong>1,126 php</strong>
+                  <strong>{subtotal} php</strong>
                 </Col>
               </Row>
               <Row className={styles.orderedAmountRow}>
@@ -237,7 +232,7 @@ const Details: React.FC<ContainerProps> = ({}) => {
                   <span>Delivery fee</span>
                 </Col>
                 <Col>
-                  <strong>86 php</strong>
+                  <strong>{deliveryFee} php</strong>
                 </Col>
               </Row>
               <Row className={styles.total}>
@@ -245,7 +240,7 @@ const Details: React.FC<ContainerProps> = ({}) => {
                   <strong>Total</strong>
                 </Col>
                 <Col>
-                  <strong>1,212 php</strong>
+                  <strong>{total} php</strong>
                 </Col>
               </Row>
             </Col>
@@ -256,10 +251,16 @@ const Details: React.FC<ContainerProps> = ({}) => {
               className="d-flex flex-column justify-content-center"
             >
               <div className="d-flex flex-md-column gap-2">
-                <Link to="/checkout" className={styles.btnCheckout}>
-                  Checkout
-                </Link>
-                <Button className={styles.btnCancel}>Cancel Order</Button>
+                <Button
+                  className={styles.btnCheckout}
+                  onClick={handleCheckout}
+                  disabled={!cart.length}
+                >
+                  Check out
+                </Button>
+                <Button className={styles.btnCancel} onClick={handleCancel}>
+                  Cancel Order
+                </Button>
               </div>
             </Col>
           </Row>

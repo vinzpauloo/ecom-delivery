@@ -11,26 +11,80 @@ import "swiper/scss/grid";
 import "swiper/scss/navigation";
 
 // Import required modules
-import { Grid, Navigation } from "swiper";
+import { Grid } from "swiper";
 
 import styles from "./CartSlider.module.scss";
 
 interface ContainerProps {
-  slides: Slide[];
+  cart: TCart[];
+  setCart: React.Dispatch<React.SetStateAction<TCart[]>>;
 }
 
-type Slide = {
-  image: string;
+type TCart = {
+  id: number;
+  name: string;
   price: number;
-  qty: number;
+  photo: string;
+  quantity: number;
 };
 
-const SwiperSlideItem = (item: Slide, index: number) => {
+const SwiperSlideItem = (
+  item: TCart,
+  index: number,
+  setCart: ContainerProps["setCart"]
+) => {
+  const updateCart = (item: TCart) => {
+    setCart((current) =>
+      current.map((obj) => {
+        if (obj.id === item.id) {
+          return item;
+        }
+
+        return obj;
+      })
+    );
+  };
+
+  const handleIncrement = (item: TCart) => {
+    // Prepare new cart item
+    const newItem = { ...item, quantity: item.quantity + 1 };
+
+    // Update cart state
+    updateCart(newItem);
+  };
+
+  const handleDecrement = (item: TCart) => {
+    if (item.quantity > 1) {
+      // Prepare new cart item
+      const newItem = { ...item, quantity: item.quantity - 1 };
+
+      // Update cart state
+      updateCart(newItem);
+    } else {
+      // Remove item from the cart
+      setCart((current) =>
+        current.filter((obj) => {
+          return obj.id !== item.id;
+        })
+      );
+
+      console.log("removing item from the cart ...", item.id);
+    }
+  };
+
   return (
     <SwiperSlide key={index} className={styles.swiperSlide}>
       <div className={styles.slideItem}>
         <div className={styles.slideImageContainer}>
-          <img src={item.image} alt="" />
+          <img
+            src={
+              item.photo == "no-images.jpg"
+                ? "https://via.placeholder.com/500"
+                : // : process.env.REACT_APP_BASE_URL + item.photo
+                  item.photo
+            }
+            alt=""
+          />
           <div className={styles.slidePriceContainer}>
             <p className={styles.slidePrice}>{item.price}php</p>
           </div>
@@ -38,14 +92,22 @@ const SwiperSlideItem = (item: Slide, index: number) => {
 
         <div className={`d-flex justify-content-center ${styles.slideOptions}`}>
           <div
-            className={`d-flex justify-content-center align-items-center ${styles.qty}`}
+            className={`d-flex justify-content-center align-items-center ${styles.quantity}`}
           >
             <Button>
-              <Dash color="#000000" size={14} />
+              <Dash
+                color="#000000"
+                size={14}
+                onClick={() => handleDecrement(item)}
+              />
             </Button>
-            <span className={styles.num}>{item.qty}</span>
+            <span className={styles.num}>{item.quantity}</span>
             <Button>
-              <Plus color="#000000" size={14} />
+              <Plus
+                color="#000000"
+                size={14}
+                onClick={() => handleIncrement(item)}
+              />
             </Button>
           </div>
         </div>
@@ -54,21 +116,20 @@ const SwiperSlideItem = (item: Slide, index: number) => {
   );
 };
 
-const CartSlider: React.FC<ContainerProps> = ({ slides }) => {
-  return (
+const CartSlider: React.FC<ContainerProps> = ({ cart, setCart }) => {
+  return cart.length ? (
     <>
-      {/* Desktop version */}
       <Swiper
         slidesPerView={4}
         spaceBetween={10}
         className={`d-none d-lg-block ${styles.sliderContainer}`}
       >
-        {slides.map((item, index) => {
-          return SwiperSlideItem(item, index);
+        {/* Desktop version */}
+        {cart.map((item, index) => {
+          return SwiperSlideItem(item, index, setCart);
         })}
       </Swiper>
 
-      {/* Mobile version */}
       <Swiper
         slidesPerView={2.25}
         spaceBetween={10}
@@ -86,11 +147,14 @@ const CartSlider: React.FC<ContainerProps> = ({ slides }) => {
         modules={[Grid]}
         className={`d-lg-none ${styles.sliderContainer}`}
       >
-        {slides.map((item, index) => {
-          return SwiperSlideItem(item, index);
+        {/* Mobile version */}
+        {cart.map((item, index) => {
+          return SwiperSlideItem(item, index, setCart);
         })}
       </Swiper>
     </>
+  ) : (
+    <>Cart is empty.</>
   );
 };
 

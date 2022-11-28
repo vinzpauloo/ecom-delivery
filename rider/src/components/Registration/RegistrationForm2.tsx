@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { useValidate } from "../../hooks/useValidate";
 
 import styles from "./RegistrationForm2.module.scss";
 import constants from "../../utils/constants.json";
@@ -19,13 +20,6 @@ import Bike4 from "../../assets/images/bike4.png";
 
 // Setup form schema & validation
 interface IFormInputs {
-  // first_name: string;
-  // last_name: string;
-  // address: string;
-  // mobile: string;
-  // email: string;
-  // password: string;
-  // password_confirmation: string;
   brand: string;
   model: string;
   year: string;
@@ -35,26 +29,6 @@ interface IFormInputs {
 
 const schema = yup
   .object({
-    // first_name: yup
-    //   .string()
-    //   .min(2, constants.form.error.firstNameMin)
-    //   .required(),
-    // last_name: yup.string().min(2, constants.form.error.lastNameMin).required(),
-    // address: yup.string().required(),
-    // mobile: yup
-    //   .string()
-    //   .matches(/^\+(?:[0-9] ?){11,12}[0-9]$/, constants.form.error.mobile)
-    //   .required(),
-    // email: yup.string().email(constants.form.error.email).required(),
-    // password: yup
-    //   .string()
-    //   .min(6, constants.form.error.passwordMin)
-    //   .max(16, constants.form.error.passwordMax)
-    //   .required(),
-    // password_confirmation: yup
-    //   .string()
-    //   .oneOf([yup.ref("password"), null], constants.form.error.passwordConfirm)
-    //   .required(),
     brand: yup.string().required(),
     model: yup.string().required(),
     year: yup.string().required(),
@@ -68,12 +42,23 @@ interface ContainerProps {}
 const RegistrationForm2: React.FC<ContainerProps> = ({}) => {
   const [error, setError] = useState("");
   const [multipleErrors, setMultipleErrors] = useState([""]);
+  const [errorEmail, setErrorEmail] = useState("");
+  const [errorMobile, setErrorMobile] = useState("");
+  const [data, setData] = useState([]);
   const navigate = useNavigate();
+  const { validateFields } = useValidate();
+  const [apiErrors, setApiErrors] = useState<string[]>([]);
+
+  const [disabled, setDisabled] = useState(true);
+
+  const handleInput = () => {
+    setDisabled(!disabled);
+  };
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty, isValid },
   } = useForm<IFormInputs>({
     resolver: yupResolver(schema),
   });
@@ -186,12 +171,12 @@ const RegistrationForm2: React.FC<ContainerProps> = ({}) => {
             })}
           </div>
 
-          <div className="d-flex justify-content-center align-items-center gap-3 mt-3">
+          {/* <div className="d-flex justify-content-center align-items-center gap-3 mt-3">
             <img src={Bike1} alt="" />
             <img src={Bike2} alt="" />
             <img src={Bike3} alt="" />
             <img src={Bike4} alt="" />
-          </div>
+          </div> */}
         </div>
 
         <div
@@ -202,6 +187,7 @@ const RegistrationForm2: React.FC<ContainerProps> = ({}) => {
             id="terms"
             label="By continuing, you indicate that you read and agreed to terms of use"
             required
+            onChange={handleInput}
           />
         </div>
 
@@ -211,6 +197,8 @@ const RegistrationForm2: React.FC<ContainerProps> = ({}) => {
           type="submit"
           className="mt-4"
           id="nextBtn-2"
+          // disabled={!isDirty || !isValid}
+          disabled={disabled}
         >
           Create Account
         </Button>

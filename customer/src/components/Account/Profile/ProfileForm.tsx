@@ -1,10 +1,24 @@
-import React, { useState } from "react";
-import { Button, Form } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Button, Form, Row, Col } from "react-bootstrap";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import axios, { AxiosError } from "axios";
+import { useUser } from "../../../hooks/useUser";
+import { useSignIn } from "react-auth-kit";
+import { GoogleMap, useLoadScript, Marker } from "@react-google-maps/api";
+import usePlacesAutocomplete, {
+  getGeocode,
+  getLatLng,
+} from "use-places-autocomplete";
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxPopover,
+  ComboboxList,
+  ComboboxOption,
+} from "@reach/combobox";
+import "@reach/combobox/styles.css";
 
 import styles from "./ProfileForm.module.scss";
 import constants from "../../../utils/constants.json";
@@ -13,178 +27,235 @@ import constants from "../../../utils/constants.json";
 interface IFormInputs {
   first_name: string;
   last_name: string;
-  address: string;
+  // address: string;
   mobile: string;
   email: string;
-  password: string;
-  password_confirmation: string;
 }
+
+const libraries: (
+  | "places"
+  | "drawing"
+  | "geometry"
+  | "localContext"
+  | "visualization"
+)[] = ["places"];
 
 const schema = yup
   .object({
     first_name: yup
       .string()
-      .min(6, constants.form.error.firstNameMin)
+      .min(2, constants.form.error.firstNameMin)
       .required(),
-    last_name: yup.string().min(6, constants.form.error.lastNameMin).required(),
-    address: yup.string().required(),
-    mobile: yup.string().required(),
+    last_name: yup.string().min(2, constants.form.error.lastNameMin).required(),
+    // address: yup.string().required(),
+    mobile: yup
+      .string()
+      .matches(/^(09|\+639)\d{9}$/, constants.form.error.mobile)
+      .required(),
     email: yup.string().email(constants.form.error.email).required(),
-    password: yup
-      .string()
-      .min(6, constants.form.error.passwordMin)
-      .max(16, constants.form.error.passwordMax)
-      .required(),
-    password_confirmation: yup
-      .string()
-      .oneOf([yup.ref("password"), null], constants.form.error.passwordConfirm)
-      .required(),
   })
   .required();
 
 interface ContainerProps {}
 
+const API_KEY: string = process.env.REACT_APP_GOOGLE_PLACES_API_KEY || "";
+
+const PlacesAutocomplete = ({
+  address,
+  setAddress,
+}: {
+  address: string;
+  setAddress: any;
+}) => {
+  const {
+    ready,
+    value,
+    setValue,
+    suggestions: { status, data },
+    clearSuggestions,
+  } = usePlacesAutocomplete();
+
+  const handleSelect = async (address: any) => {
+    setValue(address, false);
+    setAddress(address);
+    clearSuggestions();
+    console.log(address);
+  };
+
+  return (
+    <Form.Group className="position-relative">
+      <Form.Label>Full Address</Form.Label>
+      <Combobox onSelect={handleSelect}>
+        <ComboboxInput
+          value={address}
+          onChange={(e) => {
+            setValue(e.target.value);
+            setAddress(e.target.value);
+          }}
+          disabled={!ready}
+          className={styles.addressInput}
+        />
+        <ComboboxPopover>
+          <ComboboxList>
+            {status === "OK" &&
+              data.map(({ place_id, description }) => (
+                <ComboboxOption key={place_id} value={description} />
+              ))}
+          </ComboboxList>
+        </ComboboxPopover>
+      </Combobox>
+    </Form.Group>
+  );
+};
+
 const ProfileForm: React.FC<ContainerProps> = ({}) => {
   const [error, setError] = useState("");
-  const [multipleErrors, setMultipleErrors] = useState([""]);
+  const [message, setMessage] = useState("");
+  const [address, setAddress] = useState("");
   const navigate = useNavigate();
-
+  const { getUser, updateUser } = useUser();
+  const signIn = useSignIn();
   const {
+    reset,
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<IFormInputs>({
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = async (data: IFormInputs) => {
-    console.log("onSubmit", data);
-
-    /*
-    try {
-      // START: Access register API
-      const url = process.env.REACT_APP_API_LOCAL + "/customer/register";
-      const options = {
-        headers: {
-          Accept: process.env.REACT_APP_HEADER_ACCEPT_VND,
-          "Content-Type": process.env.REACT_APP_HEADER_ACCEPT_VND,
-        },
-        withCredentials: true,
-      };
-
-      const response = await axios.post(url, data, options);
-      // END: Access register API
-
-      console.log("/customer/register", response);
-
-      if (response.status === 201) {
-        const { data } = response.data;
-
-        console.log("Register success!", response);
-
-        // navigate("/");
-      }
-    } catch (err) {
-      if (err && err instanceof AxiosError) {
-        if (err.response && err.response.data.errors) {
-          // Multiple errors from the backend
-          let tempErrors: any[] = [];
-          for (const [key, value] of Object.entries(err.response.data.errors)) {
-            tempErrors.push(value);
-          }
-          setMultipleErrors(tempErrors);
-        } else {
-          // Single error
-          setError("*" + err.response?.data.message);
-        }
-      } else if (err && err instanceof Error) setError(err.message);
-
-      console.log("Error", err);
-    }
-    */
+  const resetMessages = () => {
+    setMessage("");
+    setError("");
   };
+
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: API_KEY,
+    libraries: libraries,
+  });
+
+  const onSubmit = async (data: IFormInputs) => {
+    // Add address to form data
+    const newFormData = { ...data, address: address };
+    console.log("onsubmit", newFormData);
+
+    const response = await updateUser(newFormData);
+    console.log("updateUser response", response);
+
+    if (!response.error) {
+      setMessage(constants.form.success.updateProfile);
+
+      signIn({
+        token: localStorage.getItem("_auth") || "",
+        expiresIn: 3600,
+        tokenType: "Bearer",
+        authState: response,
+      });
+    } else {
+      setError(response.error);
+    }
+  };
+
+  // Get user request
+  const handleGetUser = async () => {
+    console.log("Requesting getUser ...");
+
+    const response = await getUser();
+    console.log("handleGetUser response", response);
+    let defaultValues = {
+      first_name: response.first_name,
+      last_name: response.last_name,
+      email: response.email,
+      mobile: response.mobile,
+      // address: response.address[0]?.address,
+    };
+
+    reset(defaultValues);
+    setAddress(response.address[0]?.address);
+  };
+
+  useEffect(() => {
+    handleGetUser();
+  }, []);
+
+  if (!isLoaded) return <div>Loading...</div>;
 
   return (
     <>
       <Form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
         {/* Basic details */}
         <div className={`mx-4 mx-md-5 mx-lg-0 ${styles.formInnerContainer}`}>
-          <h3 className="text-center">Get started with FoodMonkey</h3>
+          <h3 className="text-center">My Account</h3>
 
-          <Form.Group className="position-relative">
-            <Form.Label>First name</Form.Label>
-            <Form.Control
-              type="text"
-              onKeyUp={() => setError("")}
-              required
-              {...register("first_name")}
-            />
-          </Form.Group>
+          <Row md={2} xs={1} className="mb-lg-3 mb-md-2">
+            <Col>
+              <Form.Group className="position-relative">
+                <Form.Label>First name</Form.Label>
+                <Form.Control
+                  type="text"
+                  onKeyUp={() => resetMessages()}
+                  required
+                  {...register("first_name")}
+                />
+              </Form.Group>
+            </Col>
 
-          <Form.Group className="position-relative">
-            <Form.Label>Last name</Form.Label>
-            <Form.Control
-              type="text"
-              onKeyUp={() => setError("")}
-              required
-              {...register("last_name")}
-            />
-          </Form.Group>
+            <Col>
+              <Form.Group className="position-relative">
+                <Form.Label>Last name</Form.Label>
+                <Form.Control
+                  type="text"
+                  onKeyUp={() => resetMessages()}
+                  required
+                  {...register("last_name")}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
 
-          <Form.Group className="position-relative">
-            <Form.Label>Email</Form.Label>
-            <Form.Control
-              type="email"
-              onKeyUp={() => setError("")}
-              required
-              {...register("email")}
-            />
-          </Form.Group>
+          <Row md={2} xs={1} className="mb-lg-3 mb-md-2">
+            <Col>
+              <Form.Group className="position-relative">
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  required
+                  {...register("email")}
+                  disabled
+                />
+              </Form.Group>
+            </Col>
 
-          <Form.Group className="position-relative">
-            <Form.Label>Mobile number</Form.Label>
-            <Form.Control
-              type="text"
-              onKeyUp={() => setError("")}
-              required
-              {...register("mobile")}
-            />
-          </Form.Group>
+            <Col>
+              <Form.Group className="position-relative">
+                <Form.Label>Mobile number</Form.Label>
+                <Form.Control
+                  type="text"
+                  required
+                  {...register("mobile")}
+                  disabled
+                />
+              </Form.Group>
+            </Col>
+          </Row>
 
-          <Form.Group className="position-relative">
-            <Form.Label>Password</Form.Label>
-            <Form.Control
-              type="password"
-              onKeyUp={() => setError("")}
-              required
-              {...register("password")}
-            />
-          </Form.Group>
-
-          <Form.Group className="position-relative">
-            <Form.Label>Confirm Password</Form.Label>
-            <Form.Control
-              type="password"
-              onKeyUp={() => setError("")}
-              required
-              {...register("password_confirmation")}
-            />
-          </Form.Group>
+          {/* <Button
+            variant="primary"
+            type="submit"
+            className={styles.btnChangePass}
+            onClick={() => navigate("change-password")}
+          >
+            Change Password
+          </Button> */}
 
           {/* Error messages */}
           <div className={styles.errors}>
+            <p>{error}</p>
             <p>{errors.first_name?.message}</p>
             <p>{errors.last_name?.message}</p>
-            <p>{errors.address?.message}</p>
+            {/* <p>{errors.address?.message}</p> */}
             <p>{errors.mobile?.message}</p>
             <p>{errors.email?.message}</p>
-            <p>{errors.password?.message}</p>
-            <p>{errors.password_confirmation?.message}</p>
-
-            {/* Errors from backend */}
-            {multipleErrors.map((item, index) => {
-              return <p key={index}>{item}</p>;
-            })}
           </div>
         </div>
 
@@ -192,27 +263,37 @@ const ProfileForm: React.FC<ContainerProps> = ({}) => {
         <div className={styles.formInnerContainer}>
           <h3 className="text-center">Enter Address</h3>
 
-          <Form.Group className="position-relative">
+          <PlacesAutocomplete address={address} setAddress={setAddress} />
+
+          {/* <Form.Group className="position-relative">
             <Form.Label>Full Address</Form.Label>
             <Form.Control
               type="text"
-              onKeyUp={() => setError("")}
+              onKeyUp={() => resetMessages()}
               required
               {...register("address")}
             />
-          </Form.Group>
+          </Form.Group> */}
         </div>
 
-        <div className="d-flex justify-content-center gap-5 mt-5">
+        {/* Success messages */}
+        <p className="text-success">{message}</p>
+
+        <div className="d-flex justify-content-center gap-5 mt-sm-5 mt-4">
           <Button
             variant="primary"
             size="lg"
             onClick={() => navigate("/account/orders")}
           >
-            Order
+            Orders
           </Button>
 
-          <Button variant="primary" size="lg" type="submit">
+          <Button
+            variant="primary"
+            size="lg"
+            type="submit"
+            disabled={!isValid || !address}
+          >
             Save Info
           </Button>
         </div>

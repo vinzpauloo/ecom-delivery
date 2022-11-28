@@ -1,31 +1,27 @@
 import { Container } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
-// Import Swiper React components
+// Swiper components & styles
 import { Swiper, SwiperSlide } from "swiper/react";
-
-// Import Swiper styles
-import "swiper/css";
-import "swiper/css/effect-fade";
-import "swiper/css/navigation";
-
-// Import required modules
 import { Autoplay, Navigation } from "swiper";
+import "swiper/scss";
+import "swiper/scss/navigation";
 
 import styles from "./CategoryRow.module.scss";
-import { Link } from "react-router-dom";
 
 interface ContainerProps {
   title: string;
-  slides: Slide[];
+  type: string;
+  slides: TSlide[];
 }
 
-type Slide = {
+type TSlide = {
   id: number;
   name: string;
   photo: string;
 };
 
-const CategoryRow: React.FC<ContainerProps> = ({ title, slides }) => {
+const CategoryRow: React.FC<ContainerProps> = ({ title, type, slides }) => {
   return (
     <Container fluid="xxl" className={styles.container}>
       <h3 className={styles.sectionTitle}>Shop by {title}</h3>
@@ -64,7 +60,10 @@ const CategoryRow: React.FC<ContainerProps> = ({ title, slides }) => {
           {slides.map((item, index) => {
             return (
               <SwiperSlide key={item.id}>
-                <Link to="/restaurants" className="text-decoration-none">
+                <Link
+                  to={`/restaurants/${type}/${item.id}`}
+                  className="text-decoration-none"
+                >
                   <div className={styles.slideItem}>
                     <div className={styles.slideImageContainer}>
                       <img

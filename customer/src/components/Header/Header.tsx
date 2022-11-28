@@ -1,11 +1,13 @@
-import { Link } from "react-router-dom";
-import { Container, Row, Col } from "react-bootstrap";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Container, Row, Col, Form } from "react-bootstrap";
 import { Person } from "react-bootstrap-icons";
 import { useLogout } from "../../hooks/useLogout";
 import { useIsAuthenticated } from "react-auth-kit";
 
 import OffcanvasMenu from "./OffcanvasMenu";
 import styles from "./Header.module.scss";
+import constants from "../../utils/constants.json";
 
 import LogoHeader from "../../assets/images/logo-header.png";
 import LogoHeaderHover from "../../assets/images/logo-header-hover.png";
@@ -15,8 +17,25 @@ import SearchIcon from "../../assets/images/search.png";
 interface ContainerProps {}
 
 const Header: React.FC<ContainerProps> = () => {
+  const [searchTxt, setSearchTxt] = useState("");
   const { logout } = useLogout();
   const isAuthenticated = useIsAuthenticated();
+  const navigate = useNavigate();
+
+  const handleOnKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  const handleSearch = () => {
+    // Check if there are minimum of 3 characters
+    if (searchTxt.length >= 3) {
+      navigate(`search/${searchTxt}`);
+    } else {
+      alert(constants.form.error.searchMin);
+    }
+  };
 
   const handleLogout = (
     event: React.MouseEvent<HTMLAnchorElement, MouseEvent>
@@ -68,8 +87,19 @@ const Header: React.FC<ContainerProps> = () => {
           <Col className="d-none d-lg-block">
             <div className="d-flex justify-content-between align-items-center">
               <div className={styles.search}>
-                <input type="text" placeholder="Search..." />
-                <img src={SearchIcon} alt="" />
+                <Form.Control
+                  type="text"
+                  placeholder="Search..."
+                  value={searchTxt}
+                  onChange={(e) => setSearchTxt(e.target.value)}
+                  onKeyUp={handleOnKeyUp}
+                />
+                <img
+                  src={SearchIcon}
+                  alt=""
+                  className={styles.searchIcon}
+                  onClick={handleSearch}
+                />
               </div>
 
               <div className={`lh-1 text-end ${styles.links}`}>
@@ -83,7 +113,7 @@ const Header: React.FC<ContainerProps> = () => {
                 ) : (
                   <>
                     <Link to="/login">Log in</Link>
-                    <a href="#">Guest</a>
+                    {/* <a href="#">Guest</a> */}
                   </>
                 )}
               </div>
@@ -98,8 +128,19 @@ const Header: React.FC<ContainerProps> = () => {
           >
             <div className="d-flex justify-content-end align-items-center">
               <div className={`flex-fill me-3 ${styles.search}`}>
-                <input className="me-10" type="text" placeholder="Search..." />
-                <img src={SearchIcon} alt="" />
+                <Form.Control
+                  type="text"
+                  placeholder="Search..."
+                  value={searchTxt}
+                  onChange={(e) => setSearchTxt(e.target.value)}
+                  onKeyUp={handleOnKeyUp}
+                />
+                <img
+                  src={SearchIcon}
+                  alt=""
+                  className={styles.searchIcon}
+                  onClick={handleSearch}
+                />
               </div>
 
               <OffcanvasMenu />

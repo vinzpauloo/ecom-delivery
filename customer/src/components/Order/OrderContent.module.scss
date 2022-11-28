@@ -1,0 +1,118 @@
+@import "../../theme/_variables.scss";
+@import "../../theme/_mixins.scss";
+
+.title {
+  color: $FM_TEXT_BROWN;
+  margin-bottom: 50px;
+
+  h3 {
+    font-size: 30px;
+    line-height: 1;
+    text-shadow: $FM_TITLE_SHADOW;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  p {
+    font-size: 25px;
+    line-height: 1;
+    margin: 0;
+  }
+
+  @include devices(md) {
+    margin-bottom: 40px;
+
+    h3 {
+      font-size: 25px;
+    }
+    p {
+      font-size: 18px;
+    }
+  }
+}
+
+.status {
+  img {
+    max-width: 100%;
+    padding: 0 15px;
+  }
+
+  p {
+    color: #000000;
+    font-size: 18px;
+    font-weight: 400;
+    margin: 30px 0 0;
+  }
+
+  .cancel {
+    background-color: #ffffff;
+    border-color: #000000;
+    border-radius: 5px;
+    box-shadow: $FM_BUTTON_SHADOW;
+    color: #000000;
+    font-weight: 500;
+    margin-top: 10px;
+    min-width: 150px;
+
+    &:hover,
+    &:active,
+    &:focus {
+      background-color: #000000;
+      border-color: #000000;
+      color: #ffffff;
+    }
+
+    @include devices(md) {
+      font-size: 14px;
+      min-width: 120px;
+    }
+
+    @include devices(sm) {
+      width: 40%;
+    }
+  }
+
+  .imgContainer {
+    position: relative;
+
+    .altImg {
+      animation: fadeIn 1.5s infinite alternate;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @include devices(md) {
+    p {
+      font-size: 16px;
+      margin-top: 20px;
+    }
+
+    .imgContainer {
+      .altImg {
+        left: 50%;
+        transform: translate(-50%);
+      }
+    }
+  }
+
+  @include devices(sm) {
+    margin-bottom: 30px;
+
+    img {
+      // max-width: 50%;
+      max-width: 200px;
+    }
+
+    p {
+      margin-top: 10px;
+    }
+  }
+}

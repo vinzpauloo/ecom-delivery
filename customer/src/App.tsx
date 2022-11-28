@@ -20,16 +20,16 @@ const App: React.FC = (props: Props) => {
   let customClassNames = "";
 
   // Pages with custom header
-  const customHeaderPages = ["/login", "/register", "/otp", "/otp-order"];
+  const customHeaderPages = ["/login", "/register", "/otp"];
 
   // Pages with custom footer
   const customFooterPages = ["/login"];
 
   // Pages with custom background
-  const customBgPages = ["/account/orders"];
+  const customBgPages = [""];
 
   // Pages with no footer on mobile
-  const noFooterOnMobile = ["/restaurant"];
+  const noFooterOnMobile = [/^\/restaurants\/\d+$/];
 
   if (customHeaderPages.includes(location.pathname)) {
     customClassNames += "custom-header ";
@@ -49,7 +49,7 @@ const App: React.FC = (props: Props) => {
     customClassNames += "custom-bg ";
   }
 
-  if (noFooterOnMobile.includes(location.pathname)) {
+  if (noFooterOnMobile.some((rx) => rx.test(location.pathname))) {
     customClassNames += "no-footer-on-mobile ";
   }
 

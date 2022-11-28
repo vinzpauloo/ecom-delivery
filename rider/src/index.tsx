@@ -11,8 +11,12 @@ import Otp from "./pages/Otp";
 import OtpOrder from "./pages/OtpOrder";
 import Delivery from "./pages/Account/Delivery";
 import History from "./pages/Account/History";
+import OrderDetails from "./pages/Account/OrderDetails";
 import Profile from "./pages/Account/Profile";
+import Rewards from "./pages/Account/Rewards";
 import ResetPassword from "./pages/Account/ResetPassword";
+import Order from "./pages/Account/Order";
+import RiderTracker from "./pages/Account/RiderTracker";
 // import { AuthContextProvider } from "./context/AuthContext";
 import { AuthProvider } from "react-auth-kit";
 
@@ -35,8 +39,12 @@ root.render(
             <Route path="account">
               <Route index element={<Profile />} />
               <Route path="for-delivery" element={<Delivery />} />
+              <Route path="for-delivery/order/:id" element={<Order />} />
+              <Route path="orders/:id/otw" element={<RiderTracker />} />
               <Route path="order-history" element={<History />} />
+              <Route path="order-history/:id" element={<OrderDetails />} />
               <Route path="reset-password" element={<ResetPassword />} />
+              <Route path="rewards" element={<Rewards />} />
             </Route>
           </Route>
         </Routes>
