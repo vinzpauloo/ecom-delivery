@@ -20,7 +20,153 @@
     margin-bottom: 0;
     line-height: 1.2;
   }
+
+  .searchInput{
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 39px;
+    input{
+      width: 100%;
+      height: 100%;
+      padding: 0 12px;
+      background: #F3F3F3;
+      border: 1px solid #DBDBDB;
+      box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.25);
+      border-radius: 5px;
+      &::placeholder{
+        font-weight: 300;
+        font-size: 12px;
+        line-height: 12px;
+        color: #7D7D7C;
+      }
+    }
+    .searchIcon{
+      position: absolute;
+      right: 20px;
+      width: 24px;
+      height: 24px;
+    }
+  }
+  .buttonContent{
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    .buttons{
+      width: 138px;
+      height: 31px;
+      background: #D9D9D9;
+      border: 0.5px solid rgba(97, 72, 28, 0.5);
+      box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+      border-radius: 5px;
+      text-align: center;
+      padding: 0;
+      color: #000;
+      font-weight: 500;
+      font-size: 15px;
+      line-height: 15px;
+      &:hover{
+        background-color: #61481c;
+        color: #ffffff;
+      }
+    }
+  }
+
+  @include devices(md){
+    padding: 20px;
+    min-height: 95%;
+  }
+  @include devices(sm){
+    padding: 0px;
+    min-height: 95%;
+    .buttons{
+      width: 92px;
+      height: 29px;
+    }
+  }
+
 }
+
+@include devices(xs){
+  .mobileHeader{
+    margin-top: 10px;
+    .headerH3{
+      // background-color: #000;
+      h3{
+        font-weight: 400;
+        font-size: 15px;
+        line-height: 15px;
+      }
+    }
+    .searchInput{
+      height: 23px !important;
+      width: 148px !important;
+      input{
+        width: 100%;
+        height: 100%;
+      }
+      .searchIcon{
+        height: 15px !important;
+        width: 15px !important;
+      }
+    }
+  }
+}
+
+.modalBody{
+  background: #FDF5E7;
+  .modalHeaderContent{
+    height: 50px;
+    background: #FFFFFF;
+    border-bottom: 1px solid #000;
+    .modalHeader{
+      font-weight: 500;
+      font-size: 17px;
+      line-height: 17px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000000;
+      text-align: center;
+      padding: 0;
+    }
+  }
+  .orderDeliveryContainer{
+    height: 34px;
+    margin:  8px 0 14px;
+    .modalRow{
+      border-top: 1px solid #000;
+      border-bottom: 1px solid #000;
+      background: #FFFFFF;
+      height: 34px;
+      .modalHeader{
+        margin: 0;
+        font-weight: 400;
+        font-size: 17px;
+        line-height: 17px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #000000;
+        text-align: center;
+        padding: 0;
+        &:first-child{
+          background-color: #a47e3b;
+          font-size: 17px;
+          line-height: 23px;
+          display: flex;
+          align-items: center;
+          text-align: center;
+          color: #FFFFFF;
+          text-shadow: 0px 0px 2px rgba(0, 0, 0, 0.5);
+          border-right: 1px solid #000;
+        }
+      }
+    }
+  }
+}
+
 
 .innerContainer {
   margin: 30px 0 0;
@@ -140,19 +286,106 @@
 
     .orderId {
       border-radius: 3px;
-      width: 180px;
+      width: 123px;
+      height: 26px;
+      h6{
+        padding: 5px;
+        font-weight: 600;
+        font-size: 12px;
+        line-height: 16px;
+        color: #FFFFFF;
+        text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.5);
+      }
     }
 
     .btnView {
       display: block;
 
       a {
+        padding: 8px;
         border-radius: 3px;
-        font-size: 11px;
-        height: 34px;
-        line-height: 34px;
-        width: 110px;
+        height: 26px;
+        width: 82px;
+        font-weight: 700;
+        font-size: 8px;
+        line-height: 8px;
+        color: #FFFFFF;
+
+        text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.25);
       }
     }
   }
+}
+
+@include devices(md){
+  h4{
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 20px;
+    /* identical to box height */
+
+    text-align: center;
+
+    color: #000000;
+  }
+  .orderDeliveryContainer{
+    margin: 15px 0;
+    height: 120px !important;
+    .contentContainer{
+      padding: 0 !important;
+      .idContent{
+        text-align: center;
+        .modalHeader{
+          border-top: 1px solid #000000;  
+          border-bottom: 1px solid #000000;    
+        }
+        .modalHeaderLabel{
+          background: #A47E3B;
+          border-top: 1px solid #000000;  
+          border-bottom: 1px solid #000000;   
+          color: #fff;
+        }
+      }
+      .row{
+        text-align: center;
+        border-top: 1px solid #000000;  
+        border-bottom: 1px solid #000000;  
+        border-left: 1px solid #000000;  
+        .lable{
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+      }
+    }
+  }
+}
+@include devices(md){
+  .mobileButtonContent{
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    padding: 10px 0 60px;
+    .buttons{
+      width: 92px;
+      height: 29px;
+      background: #D9D9D9;
+      border: 0.5px solid rgba(97, 72, 28, 0.5);
+      box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+      border-radius: 5px;
+      text-align: center;
+      padding: 0;
+      color: #000;
+      font-weight: 500;
+      font-size: 15px;
+      line-height: 15px;
+      &:hover{
+        background-color: #61481c;
+        color: #ffffff;
+      }
+    } 
+  } 
 }

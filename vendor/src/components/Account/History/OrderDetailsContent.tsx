@@ -11,6 +11,8 @@ import statusIsDelivered from "../../../assets/images/delivered.png";
 
 import styles from "./OrderDetailsContent.module.scss";
 
+import { getDate, getTime } from "../../../utils/formatDate";
+
 interface ContainerProps {}
 
 type TOrder = {
@@ -21,7 +23,14 @@ type TOrder = {
   customer_mobile: string;
   order_address: string;
   order_status: string;
+  order_mobile: number;
   restaurant_address: string;
+  restaurant_name: string;
+  restaurant_photo: string;
+  products: [{ name: string; quantity: number }];
+  total_amount: number;
+  delivered_at: string;
+  received_at: string;
 };
 
 // const sampleOrder: TOrder = {
@@ -60,7 +69,7 @@ const OrderDetailsContent: React.FC<ContainerProps> = ({}) => {
       <div className={styles.innerContainer}>
         <Row>
           {/* Main content */}
-          <Col lg={{ span: 7 }}>
+          <Col>
             <h1 className="mb-0 text-center">Order Details</h1>
             <div className={styles.orderId}>
               <h6 className="text-center text-uppercase">
@@ -95,7 +104,7 @@ const OrderDetailsContent: React.FC<ContainerProps> = ({}) => {
                             </Col>
                             <Col xs={7} sm={6}>
                               <p className={styles.value}>
-                                {order?.customer_mobile}
+                                {order?.order_mobile}
                               </p>
                             </Col>
                           </Row>
@@ -133,7 +142,7 @@ const OrderDetailsContent: React.FC<ContainerProps> = ({}) => {
                             </Col>
                             <Col xs={7} sm={6}>
                               <p className={styles.value}>
-                                {order?.created_at}
+                                {order && getTime(order?.created_at)}
                               </p>
                             </Col>
                           </Row>
@@ -145,7 +154,7 @@ const OrderDetailsContent: React.FC<ContainerProps> = ({}) => {
                             </Col>
                             <Col xs={7} sm={6}>
                               <p className={styles.value}>
-                                {order?.created_at}
+                                {order && getTime(order?.delivered_at)}
                               </p>
                             </Col>
                           </Row>
@@ -161,7 +170,8 @@ const OrderDetailsContent: React.FC<ContainerProps> = ({}) => {
                             </Col>
                             <Col xs={7} sm={6}>
                               <p className={styles.value}>
-                                {order?.created_at}
+                                {/* {order && getTime(order?.created_at)} */}
+                                {order?.received_at}
                               </p>
                             </Col>
                           </Row>
@@ -182,14 +192,13 @@ const OrderDetailsContent: React.FC<ContainerProps> = ({}) => {
                         </Col>
                         <Col xs={7} sm={8}>
                           <ul className={styles.orderList}>
-                            <li>Ramen Noodles (3x)</li>
-                            <li>Milk Tea - Watermelon (1x)</li>
-                            <li>Milk Tea - Boba Soya (1x)</li>
-                            <li>Pecking Duck (1x)</li>
-                            <li>Ramen Noodles (3x)</li>
-                            <li>Milk Tea - Watermelon (1x)</li>
-                            <li>Milk Tea - Boba Soya (1x)</li>
-                            <li>Pecking Duck (1x)</li>
+                            {order?.products?.map((item, index) => {
+                              return (
+                                <li
+                                  key={index}
+                                >{`${item.name} (${item.quantity}x)`}</li>
+                              );
+                            })}
                           </ul>
                         </Col>
                       </Row>
@@ -198,9 +207,12 @@ const OrderDetailsContent: React.FC<ContainerProps> = ({}) => {
                       {/* Restaurant Logo */}
                       <div className={styles.restaurantLogo}>
                         <p className={`mb-3 ${styles.value}`}>
-                          Chan's Restaurant
+                          {order?.restaurant_name}
                         </p>
-                        <img className="img-fluid" src={placeholder} />
+                        <img
+                          className="img-fluid"
+                          src={order?.restaurant_photo}
+                        />
                       </div>
                     </Col>
                   </Row>
@@ -216,7 +228,9 @@ const OrderDetailsContent: React.FC<ContainerProps> = ({}) => {
                           <p>Sub Total :</p>
                         </Col>
                         <Col xs={7} sm={8}>
-                          <p className={styles.value}>1,350 php</p>
+                          <p className={styles.value}>
+                            ₱{order?.total_amount}.00
+                          </p>
                         </Col>
                       </Row>
                       <Row className="mb-2 mb-sm-3">
@@ -224,7 +238,7 @@ const OrderDetailsContent: React.FC<ContainerProps> = ({}) => {
                           <p>Delivery Fee :</p>
                         </Col>
                         <Col xs={7} sm={8}>
-                          <p className={styles.value}>85 php</p>
+                          <p className={styles.value}>₱86.00</p>
                         </Col>
                       </Row>
                       <Row>
@@ -232,7 +246,9 @@ const OrderDetailsContent: React.FC<ContainerProps> = ({}) => {
                           <p>Total :</p>
                         </Col>
                         <Col xs={7} sm={8}>
-                          <p className={styles.value}>1,435 php</p>
+                          <p className={styles.value}>
+                            ₱{order?.total_amount}.00
+                          </p>
                         </Col>
                       </Row>
                     </Col>
@@ -240,11 +256,30 @@ const OrderDetailsContent: React.FC<ContainerProps> = ({}) => {
                       {/* Restaurant Logo */}
                       <div className={styles.orderStatus}>
                         <p>Order Status</p>
-                        <img
+                        {/* <img
                           className="img-fluid mt-1 mb-2"
                           src={statusIsReceived}
                         />
-                        <p className={styles.value}>{order?.order_status}</p>
+                        <p className={styles.value}>{order?.order_status}</p> */}
+                        {order?.order_status === "delivered" ? (
+                          <div>
+                            <img
+                              src={statusIsDelivered}
+                              className="img-fluid mt-1 mb-2"
+                            />
+                            <p className={styles.value}>
+                              {order?.order_status}
+                            </p>
+                          </div>
+                        ) : (
+                          <div>
+                            <img
+                              className="img-fluid mt-1 mb-2"
+                              src={statusIsReceived}
+                            />
+                            <p className={styles.value}>{order?.order_status}</p>
+                          </div>
+                        )}
                       </div>
                     </Col>
                   </Row>

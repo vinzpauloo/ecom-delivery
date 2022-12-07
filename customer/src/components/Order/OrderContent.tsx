@@ -17,15 +17,20 @@ import statusIsCancelAlt from "../../assets/images/order-cancel-alt.png";
 
 import styles from "./OrderContent.module.scss";
 import constants from "../../utils/constants.json";
+import RiderFeedback from "./RiderFeedback";
+import Chat from "./Chat";
 
-// import Pusher from "pusher-js";
-// import * as PusherTypes from "pusher-js";
+import Pusher from "pusher-js";
+import * as PusherTypes from "pusher-js";
 
-// var presenceChannel: PusherTypes.PresenceChannel;
+var presenceChannel: PusherTypes.PresenceChannel;
 
-// const pusher = new Pusher("dda7bca342e12a644ba2", {
-//   cluster: "ap1",
-// });
+const PUSHER_KEY = process.env.REACT_APP_PUSHER_KEY || "";
+
+const pusher = new Pusher(PUSHER_KEY, {
+  cluster: "ap1",
+});
+Pusher.logToConsole = true;
 
 interface ContainerProps {}
 
@@ -39,10 +44,29 @@ type TOrder = {
   order_status?: string;
   restaurant_address?: string;
   total_amount?: number;
+  rider_average_rating?: number;
+  rider_name?: string;
+  rider_photo?: string;
+  rider_vehicle_brand?: string;
+  rider_vehicle_model?: string;
+  plate_number?: string;
+};
+
+type TRider = {
+  order_id?: number;
+  rider_id?: number;
+  rider_name?: string;
+  rider_photo?: string;
+  rider_vehicle_brand?: string;
+  rider_vehicle_model?: string;
+  rider_average_rating?: number;
+  plate_number?: string;
 };
 
 const OrderContent: React.FC<ContainerProps> = ({}) => {
+  const [modalShow, setModalShow] = useState(false);
   const [order, setOrder] = useState<TOrder>();
+  const [rider, setRider] = useState<TRider>();
   const {
     getOrdersById,
     getOrdersByIdGuest,
@@ -59,7 +83,49 @@ const OrderContent: React.FC<ContainerProps> = ({}) => {
       // Get user order
       const response = await getOrdersById(id);
       console.log("getOrdersById response", response);
+
+      const thisRider = {
+        order_id: response.id,
+        rider_id: response.rider_id,
+        rider_name: response.rider_name,
+        rider_photo: response.rider_photo,
+        rider_vehicle_brand: response.rider_vehicle_brand,
+        rider_vehicle_model: response.rider_vehicle_model,
+        rider_average_rating: response.rider_average_rating,
+        plate_number: response.plate_number,
+      };
+
       setOrder(response);
+      setRider(thisRider);
+
+      // Specific customer channel
+      // const channel = pusher.subscribe(
+      //   "Customer-Channel-" + response.customer_id
+      // );
+
+      // Specific order channel
+      const channel = pusher.subscribe("Order-Channel-" + response.id);
+      channel.bind("Order-Updated-Event", (data: any) => {
+        const parsedData = JSON.parse(data.data);
+        console.log(data);
+        console.log(parsedData);
+
+        const status = parsedData.status;
+
+        const thisRider = {
+          order_id: parsedData.id,
+          rider_id: parsedData.rider_id,
+          rider_name: parsedData.rider_name,
+          rider_photo: parsedData.rider_photo,
+          rider_vehicle_brand: parsedData.rider_vehicle_brand,
+          rider_vehicle_model: parsedData.rider_vehicle_model,
+          rider_average_rating: parsedData.rider_average_rating,
+          plate_number: parsedData.plate_number,
+        };
+
+        setOrder({ ...parsedData, order_status: status });
+        setRider(thisRider);
+      });
     } else {
       // Get guest session in local storage
       const guestSession = localStorage.getItem("guestSession");
@@ -68,6 +134,15 @@ const OrderContent: React.FC<ContainerProps> = ({}) => {
       const response = await getOrdersByIdGuest(id, guestSession);
       console.log("getOrdersByIdGuest response", response);
       setOrder(response);
+
+      const channel = pusher.subscribe("Guest-Channel-" + response.guest_id);
+      channel.bind("Order-Updated-Event", (data: any) => {
+        const parsedData = JSON.parse(data.data);
+        const status = parsedData.status;
+
+        console.log("Current order", response);
+        setOrder({ ...response, order_status: status });
+      });
     }
   };
 
@@ -117,10 +192,13 @@ const OrderContent: React.FC<ContainerProps> = ({}) => {
     //   }
     // });
 
-    // const channel = pusher.subscribe("foodmonkey-channel");
-    // channel.bind("ordercheckout-event", function (data: any) {
-    //   console.log(data); //check data
-    // });
+    // if (order && order.customer_id) {
+    //   const channel = pusher.subscribe("Customer-Channel-" + order.customer_id);
+    //   channel.bind("Order-Updated-Event", (data: any) => {
+    //     console.log(data);
+    //     alert("New update");
+    //   });
+    // }
   }, []);
 
   return (
@@ -217,7 +295,26 @@ const OrderContent: React.FC<ContainerProps> = ({}) => {
             </div>
           </Col>
         </Row>
+
+        {/* Display feedback button for authenticated users ONLY & when order is DELIVERED */}
+        {order?.order_status === "delivered" && isAuthenticated() && (
+          <div className="mt-lg-5 mt-4">
+            <Button
+              variant="primary"
+              className={styles.feedback}
+              onClick={() => setModalShow(true)}
+            >
+              Restaurant Feedback
+            </Button>
+          </div>
+        )}
       </div>
+
+      <RiderFeedback
+        modalShow={modalShow}
+        setModalShow={setModalShow}
+        rider={rider}
+      />
 
       {/* <div className={styles.testing}>
         <h6 className="mt-4 text-success">
@@ -240,6 +337,10 @@ const OrderContent: React.FC<ContainerProps> = ({}) => {
           )}
         </h6>
       </div> */}
+
+      <div className={styles.chatContainer}>
+        <Chat />
+      </div>
     </div>
   );
 };

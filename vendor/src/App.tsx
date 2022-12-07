@@ -1,11 +1,17 @@
-import React from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./App.scss";
 
 import Header from "./components/Header/Header";
 import HeaderBasic from "./components/Header/HeaderBasic";
 import Footer from "./components/Footer";
+import {
+  Modal,
+  Row,
+  Col
+} from "react-bootstrap";
+import monkey from "./assets/images/monkey.png"
 
 // Set axios defaults
 axios.defaults.baseURL = process.env.REACT_APP_BASE_URL;
@@ -14,7 +20,12 @@ axios.defaults.headers.common["Accept"] = process.env.REACT_APP_HEADER_ACCEPT;
 type Props = {};
 
 const App: React.FC = (props: Props) => {
+  const [notification, setNotification] = useState({
+    status: false,
+    id: null
+  });
   const location = useLocation();
+  const navigate = useNavigate();
   let RenderHeader;
   let customClassNames = "";
 
@@ -37,7 +48,7 @@ const App: React.FC = (props: Props) => {
     customClassNames += "custom-header";
     RenderHeader = <HeaderBasic />;
   } else {
-    RenderHeader = <Header />;
+    RenderHeader = <Header setNotification={setNotification}/>;
   }
 
   if (customBgPages.includes(location.pathname)) {
@@ -47,12 +58,27 @@ const App: React.FC = (props: Props) => {
   if (noFooterOnMobile.includes(location.pathname)) {
     customClassNames += "no-footer-on-mobile ";
   }
+  const handleClick = () => {
+    setNotification({status: false, id: null})
+    navigate(`/account/for-delivery/${notification.id}`)
+  }
   return (
     <>
       <div className={customClassNames}>
         {RenderHeader}
         <Outlet />
         <Footer />
+      </div>
+      <div className={`notificationContainer ${notification.status && "active"}`}>
+        <div className="notification">
+          <Col className="col-3">
+            <img className="monkey" src={monkey} alt="" />
+          </Col>
+          <Col className="leftContent col-9">
+            <Row className="header">Měiwèi de shíwù 美味的食物</Row>
+            <Row className="buttonContent" onClick={handleClick}>NEW ORDER!</Row>
+          </Col>
+        </div>
       </div>
     </>
   );

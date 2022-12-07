@@ -2,11 +2,10 @@
 @import "../../theme/_mixins.scss";
 
 .header {
-  @media (min-width: 768px) {
-    box-shadow: 3px 4px 5px rgba(0, 0, 0, 0.25);
-    width: 100%;
-    height: $FM_HEADER_HEIGHT;
-  }
+  box-shadow: 3px 4px 5px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  height: $FM_HEADER_HEIGHT;
+
   @include devices(md) {
     height: $FM_HEADER_HEIGHT_MD;
   }
@@ -23,16 +22,6 @@
 .logo {
   height: 50px;
   position: relative;
-
-  @media (width: 320px) {
-    margin-right: 50px;
-  }
-  @media (width: 375px) {
-    margin-right: 105px;
-  }
-  @media (width: 425px) {
-    margin-right: 150px;
-  }
 
   a {
     img {
@@ -71,6 +60,8 @@
 }
 
 .location {
+  margin-left: 30px;
+
   a {
     transition: all 0.3s ease-in-out;
 
@@ -88,12 +79,6 @@
       font-size: 14px;
       line-height: 1.2;
       text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.25);
-    }
-
-    span {
-      @media (max-width: 425px) {
-        display: none;
-      }
     }
   }
 }
@@ -135,5 +120,24 @@
       width: 20px;
       top: 5px;
     }
+  }
+}
+
+.links {
+  a {
+    color: #61481c;
+    font-size: 20px;
+    font-weight: 400;
+    text-decoration: none;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease-in-out;
+
+    &:hover {
+      opacity: 0.5;
+    }
+  }
+
+  :first-child {
+    margin-right: 30px;
   }
 }

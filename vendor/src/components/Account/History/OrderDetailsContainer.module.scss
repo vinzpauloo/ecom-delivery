@@ -35,7 +35,7 @@
   @include devices(md) {
     min-height: calc(100vh - $FM_HEADER_HEIGHT_MD - $FM_FOOTER_HEIGHT_MD);
     margin: 0;
-    padding: 20px 0;
+    padding: 40px 0;
 
     .mobileNav {
       position: absolute;
@@ -70,4 +70,7 @@
   border: 1px solid #000000;
   height: 100%;
   padding: 30px 20px;
+}
+.contentContainer {
+  margin-top: 15px;
 }

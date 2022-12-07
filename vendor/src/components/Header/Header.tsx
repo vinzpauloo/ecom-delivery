@@ -4,16 +4,30 @@ import { List, Person } from "react-bootstrap-icons";
 import { useLogout } from "../../hooks/useLogout";
 import { useIsAuthenticated } from "react-auth-kit";
 
+import React, { useState, useEffect } from "react";
+
+import { useForm } from "react-hook-form";
+
 import OffcanvasMenu from "./OffcanvasMenu";
 import styles from "./Header.module.scss";
+
+import Alert from "react-bootstrap/Alert";
 
 import LogoHeader from "../../assets/images/logo-header.png";
 import LogoHeaderHover from "../../assets/images/logo-header-hover.png";
 import PinLight from "../../assets/images/pin-light.png";
 
-interface ContainerProps {}
+import Pusher from "pusher-js";
+import { useUser } from "../../hooks/useUser";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import constants from "../../utils/constants.json";
 
-const Header: React.FC<ContainerProps> = () => {
+interface ContainerProps {
+  setNotification: any;
+}
+
+const Header: React.FC<ContainerProps> = ({setNotification}) => {
   const { logout } = useLogout();
   const isAuthenticated = useIsAuthenticated();
 
@@ -23,6 +37,58 @@ const Header: React.FC<ContainerProps> = () => {
     event.preventDefault();
     logout();
   };
+
+  //Get user details
+  const { getUser } = useUser();
+
+  // Get user request
+  const handleGetUser = async () => {
+    console.log("Requesting getUser ...");
+
+    const response = await getUser();
+    console.log("handleGetUser response", response);
+
+    //PusherJS start
+    const PUSHER_KEY = process.env.REACT_APP_PUSHER_KEY || "";
+
+    const pusher = new Pusher(PUSHER_KEY, {
+      cluster: "ap1",
+    });
+
+    // const pusher = new Pusher("301049041d7830d91c0e", {
+    //   cluster: "ap1",
+    // });
+    // console.log("PUSHER", pusher);
+    // Pusher.logToConsole = true;
+
+    const restaurantId = response.restaurant[0].id;
+    console.log(restaurantId);
+
+    const channel = pusher.subscribe("Restaurant-Channel-" + restaurantId);
+
+    channel.bind("Order-Created-Event", (data) => {
+      // alert(`You have received a new order.`);
+      const parsedData = JSON.parse(data.message);
+      // console.log("!!!", parsedData)
+      setNotification({status: true, id: parsedData.id});
+    });
+
+    channel.bind("Order-Updated-Event", () => {
+      alert(`Order status updated`);
+    });
+    //PusherJS end
+  };
+
+  useEffect(() => {
+    handleGetUser();
+  }, []);
+
+  // <Alert variant="success">
+  //   <Alert.Heading>Incoming Order!!!</Alert.Heading>
+  //   <p>Please check your "For Delivery" page, and accept the order.</p>
+  //   <hr />
+  //   <p className="mb-0">Thank you for using FoodMonkey.</p>
+  // </Alert>
 
   return (
     <header
@@ -83,7 +149,11 @@ const Header: React.FC<ContainerProps> = () => {
             md={{ span: 6, offset: 2 }}
             xs={{ span: 7, offset: 1 }}
             className="d-lg-none"
-          ></Col>
+          >
+            <div className="d-flex justify-content-end align-items-center">
+              <OffcanvasMenu />
+            </div>
+          </Col>
         </Row>
       </Container>
     </header>

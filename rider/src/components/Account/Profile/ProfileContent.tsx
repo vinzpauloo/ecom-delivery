@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Container, Row, Col, Button, Form } from "react-bootstrap";
+import { Container, Row, Col, Button, Form, Modal } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -17,6 +17,11 @@ import bike3 from "../../../assets/images/bike3.png";
 import bike4 from "../../../assets/images/bike4.png";
 import bike5 from "../../../assets/images/bike5.png";
 import { string } from "yup/lib/locale";
+import RiderTrackerContainer from "../Tracker/RiderTrackerContainer";
+import { response } from "express";
+
+import Lottie from "lottie-react";
+import saveSuccess from "../../../assets/save-success.json";
 
 // Setup form schema & validation
 interface IFormInputs {
@@ -34,6 +39,7 @@ interface IFormInputs {
   license_number: string;
   // license_type: string;
   // year: string;
+  photo: any;
 }
 
 const schema = yup
@@ -56,14 +62,69 @@ const schema = yup
     // year: yup.string().required(),
   })
   .required();
+interface ContainerProps {
+  user: TRider | null;
+  photo?: TTest | null;
+  photos: TBike[] | [];
+}
 
-interface ContainerProps {}
+type TTest = {
+  photo?: string;
+};
 
-const ProfileContent: React.FC<ContainerProps> = ({}) => {
+type TRider = {
+  user: string;
+  photo?: string;
+};
+
+type TBike = {
+  photo?: string;
+  photos: string;
+};
+
+const SaveSuccessModal = (props: any) => {
+  return (
+    <Modal {...props} aria-labelledby="contained-modal-title-vcenter" centered>
+      <Modal.Body>
+        <div className={`text-center p-4`}>
+          <Lottie animationData={saveSuccess} loop={true} />
+          <p className="mt-4" style={{ fontWeight: "400" }}>
+            Save Successfully
+          </p>
+
+          <Link
+            to="/account/for-delivery"
+            className={`d-inline-block mt-2`}
+            style={{
+              background: "#e6b325",
+              border: "none",
+              borderRadius: "5px",
+              color: "black",
+              fontSize: "16px",
+              fontWeight: "300",
+              width: "180px",
+              padding: "6px",
+              textDecoration: "none",
+              transition: "all 0.3s ease-in-out",
+            }}
+          >
+            Submit
+          </Link>
+        </div>
+      </Modal.Body>
+    </Modal>
+  );
+};
+
+const ProfileContent: React.FC<ContainerProps> = ({ user, photos }) => {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
   const [disabled, setDisabled] = useState(true);
+
+  const [sampleImg, setSampleImg] = useState<any>([]);
+
+  const [modalShow, setModalShow] = React.useState(false);
 
   const handleInput = () => {
     setDisabled(!disabled);
@@ -103,18 +164,19 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
 
     const response = await getUser();
     console.log("handleGetUser response", response);
+    setSampleImg(response.photos);
     let defaultValues = {
-      first_name: response.first_name,
-      last_name: response.last_name,
-      address: response.rider.address,
-      email: response.email,
-      mobile: response.mobile,
-      brand: response.rider.brand,
-      model: response.rider.model,
-      or_number: response.rider.or_number,
-      plate_number: response.rider.plate_number,
-      license_expiration: response.rider.license_expiration,
-      license_number: response.rider.license_number,
+      first_name: response.rider.first_name,
+      last_name: response.rider.last_name,
+      address: response.rider.rider.address,
+      email: response.rider.email,
+      mobile: response.rider.mobile,
+      brand: response.rider.rider.brand,
+      model: response.rider.rider.model,
+      or_number: response.rider.rider.or_number,
+      plate_number: response.rider.rider.plate_number,
+      license_expiration: response.rider.rider.license_expiration,
+      license_number: response.rider.rider.license_number,
       // license_type: response.rider.license_type,
       // year: response.rider.year,
     };
@@ -125,7 +187,7 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
   useEffect(() => {
     handleGetUser();
   }, []);
-
+  console.log(sampleImg && sampleImg);
   return (
     <div className="profile-content-container">
       <div className="right">
@@ -267,16 +329,22 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
               </Form.Group>
             </Col>
 
-            {/* <Col className="bike-images">
-              <img src={bike1} alt="" />
+            <Col className="bike-images">
+              <img src={sampleImg[0]?.photo} />
+              <img src={sampleImg[1]?.photo} />
+              <img src={sampleImg[2]?.photo} />
+              <img src={sampleImg[3]?.photo} />
+              {/* <img src={user?.photos[2]} />
+              <img src={user?.photos[3]} />  */}
+              {/* <img src={bike1} alt="" />
               <img src={bike2} alt="" />
               <img src={bike3} alt="" />
-              <img src={bike4} alt="" />
+              <img src={bike4} alt="" /> */}
 
-              <div className="px-4 d-none d-lg-block">
+              {/* <div className="px-4 d-none d-lg-block">
                 <Button>Upload</Button>
-              </div>
-            </Col> */}
+              </div> */}
+            </Col>
           </Row>
           <div className="buttons">
             {/* <Button id="editBtn" onClick={handleInput} className="d-lg-none">
@@ -285,11 +353,18 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
             <Button
               id="saveBtn"
               type="submit"
-              onClick={saveAlert}
-              className="mt-5"
+              onClick={() => {
+                // saveAlert();
+                setModalShow(true);
+              }}
+              // className="mt-5"
             >
               Save
             </Button>
+            <SaveSuccessModal
+              show={modalShow}
+              onHide={() => setModalShow(false)}
+            />
           </div>
         </Form>
       </div>

@@ -10,7 +10,6 @@ import styles from "./Header.module.scss";
 import constants from "../../utils/constants.json";
 
 import LogoHeader from "../../assets/images/logo-header.png";
-import LogoHeaderHover from "../../assets/images/logo-header-hover.png";
 import PinLight from "../../assets/images/pin-light.png";
 import SearchIcon from "../../assets/images/search.png";
 
@@ -29,12 +28,7 @@ const Header: React.FC<ContainerProps> = () => {
   };
 
   const handleSearch = () => {
-    // Check if there are minimum of 3 characters
-    if (searchTxt.length >= 3) {
-      navigate(`search/${searchTxt}`);
-    } else {
-      alert(constants.form.error.searchMin);
-    }
+    navigate(`search/${searchTxt}`);
   };
 
   const handleLogout = (
@@ -59,11 +53,6 @@ const Header: React.FC<ContainerProps> = () => {
                     src={LogoHeader}
                     alt="Food Monkey Logo"
                     className={styles.logoMain}
-                  />
-                  <img
-                    src={LogoHeaderHover}
-                    alt="Food Monkey Logo"
-                    className={styles.logoHover}
                   />
                 </Link>
               </div>

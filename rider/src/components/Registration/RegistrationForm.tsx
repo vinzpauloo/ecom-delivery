@@ -34,7 +34,8 @@ interface IFormInputs {
 }
 
 const schema = yup
-  .object({
+  .object()
+  .shape({
     first_name: yup
       .string()
       .min(2, constants.form.error.firstNameMin)
@@ -49,7 +50,7 @@ const schema = yup
     email: yup.string().email(constants.form.error.email).required(),
     password: yup
       .string()
-      .min(6, constants.form.error.passwordMin)
+      .min(7, constants.form.error.passwordMin)
       .max(16, constants.form.error.passwordMax)
       .required(),
     password_confirmation: yup
@@ -57,7 +58,13 @@ const schema = yup
       .oneOf([yup.ref("password"), null], constants.form.error.passwordConfirm)
       .required(),
     license_number: yup.string().required(),
-    license_expiration: yup.string().required(),
+    license_expiration: yup
+      .string()
+      .matches(
+        /^\d{4}-\d{2}-\d{2}$/,
+        constants.form.error.licenseExpirationFormat
+      )
+      .required(),
   })
   .required();
 
@@ -71,11 +78,13 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
   const [data, setData] = useState([]);
   const navigate = useNavigate();
   const { validateFields } = useValidate();
+  const [address, setAddress] = useState("");
   const [currentFile, setCurrentFile] = useState(undefined);
   const [previewImage, setPreviewImage] = useState(undefined);
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState("");
   const [apiErrors, setApiErrors] = useState<string[]>([]);
+  const [isChecked, setIsChecked] = useState(false);
 
   const [images, setImages] = React.useState<any>();
   const maxNumber = 1;
@@ -99,26 +108,48 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
     resolver: yupResolver(schema),
   });
 
+  const [errorImage, setErrorImage] = useState<any>(Error());
+
+  const throwError = () => {
+    throw Error("Please upload a profile photo.");
+  };
+
   const onSubmit = async (data: IFormInputs) => {
-    const data2 = { ...data, photo: images[0].photo };
-    console.log("onSubmit", data2);
-    console.log(images[0].photo);
-    // Validate fields
-    const response = await validateFields(data2);
+    const message = document.getElementById("imageError") as HTMLInputElement;
 
-    if (response.errors) {
-      // Prepare errors
-      let arrErrors: string[] = [];
-      for (let value of Object.values(response.errors)) {
-        arrErrors.push("*" + value);
+    try {
+      const data1 = { ...data };
+      const data2 = { ...data, photo: images[0].photo };
+      console.log("onSubmit", data2);
+      console.log(images[0].photo);
+
+      // Add address to form data
+      // const newFormData = { ...data, address: address };
+      // console.log("onsubmit", newFormData);
+
+      // Validate fields
+      const response = await validateFields(data1);
+      // const response2 = await validateFields(data2);
+
+      if (response.errors) {
+        // Prepare errors
+        let arrErrors: string[] = [];
+        for (let value of Object.values(response.errors)) {
+          arrErrors.push("*" + value);
+        }
+        setApiErrors(arrErrors);
+      } else {
+        // Set register data on local storage
+        localStorage.setItem("oldRegisterUser", JSON.stringify(data2));
+
+        // Navigate to OTP page
+        navigate("/registration2");
       }
-      setApiErrors(arrErrors);
-    } else {
-      // Set register data on local storage
-      localStorage.setItem("oldRegisterUser", JSON.stringify(data2));
-
-      // Navigate to OTP page
-      navigate("/registration2");
+    } catch (e) {
+      console.log(e);
+      // setErrorImage(e);
+      message.innerHTML =
+        "A profile photo is required. Please make sure the image is less than 15MB.";
     }
   };
 
@@ -256,25 +287,33 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
 
         {/* Error messages */}
         <div className={styles.errors}>
-          <p>{errorEmail}</p>
-          <p>{errorMobile}</p>
-          <p>{errors.address?.message}</p>
+          {apiErrors.map((item, index) => {
+            return <p key={index}>{item}</p>;
+          })}
+
+          <p>{errors.first_name?.message}</p>
           <p>{errors.last_name?.message}</p>
+          <p>{errors.address?.message}</p>
           <p>{errors.mobile?.message}</p>
           <p>{errors.email?.message}</p>
           <p>{errors.password?.message}</p>
           <p>{errors.password_confirmation?.message}</p>
           <p>{errors.license_number?.message}</p>
           <p>{errors.license_expiration?.message}</p>
+          <p>{errors.photo?.message} </p>
+
+          <p id="imageError"></p>
         </div>
 
-        <hr className="d-none d-lg-block" />
+        <hr className="" />
         <ImageUploading
           multiple
           value={images}
           onChange={onChange}
           maxNumber={maxNumber}
           dataURLKey="photo"
+          maxFileSize={1572864}
+          acceptType={["jpg", "gif", "png"]}
         >
           {({
             imageList,
@@ -284,6 +323,7 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
             onImageRemove,
             isDragging,
             dragProps,
+            errors,
           }) => (
             <div className="d-flex flex-column justify-content-center align-items-center gap-2">
               {defaultImg ? (
@@ -332,11 +372,19 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
                   </a>
                 </Col>
               </Row> */}
+              {/* <div
+                className={`d-flex align-items-center justify-content-center ${styles.checkbox}`}
+              >
+                <Form.Check
+                  type="checkbox"
+                  id="terms"
+                  label="By continuing, you indicate that you read and agreed to terms of use"
+                  required
+                  onChange={() => setIsChecked(!isChecked)}
+                  checked={isChecked}
+                />
+              </div> */}
               <div className="nextBtn">
-                {/* <Link to="/registration2">
-            
-          </Link> */}
-
                 <Button
                   variant="warning"
                   size="lg"
@@ -345,10 +393,55 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
                   id="nextBtn-2"
                   // href="/registration2"
                   // onClick={Continue}
+                  // disabled={!isValid || !address}
                 >
                   Next
                 </Button>
               </div>
+              {errors && (
+                <div>
+                  {errors.maxNumber && (
+                    <span
+                      style={{
+                        color: "red",
+                        fontWeight: "600",
+                      }}
+                    >
+                      Number of selected images exceed.
+                    </span>
+                  )}
+                  {errors.acceptType && (
+                    <span
+                      style={{
+                        color: "red",
+                        fontWeight: "600",
+                      }}
+                    >
+                      Your selected file type is not allowed.
+                    </span>
+                  )}
+                  {errors.maxFileSize && (
+                    <span
+                      style={{
+                        color: "red",
+                        fontWeight: "600",
+                      }}
+                    >
+                      Selected file size exceeded 1.5 MB.
+                    </span>
+                  )}
+                  {errors.resolution && (
+                    <span
+                      style={{
+                        color: "red",
+                        fontWeight: "600",
+                      }}
+                    >
+                      Selected file does not match the desired resolution
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </ImageUploading>
