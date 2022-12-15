@@ -1,0 +1,151 @@
+@import "../../theme/_variables.scss";
+@import "../../theme/_mixins.scss";
+
+.sliderContainer {
+}
+
+.slideItem {
+}
+
+.slideImageContainer {
+  border: 0.5px solid $FM_TEXT_BROWN;
+  border-radius: 5px;
+  border-bottom-right-radius: 0;
+  overflow: hidden;
+  position: relative;
+
+  img {
+    width: 100%;
+    height: 70px;
+    object-fit: cover;
+  }
+
+  .slidePriceContainer {
+    background: linear-gradient(
+      90deg,
+      rgba(217, 217, 217, 0) 0%,
+      rgba(0, 0, 0, 0.68) 51.04%
+    );
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 20px;
+
+    .slidePrice {
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 20px;
+      margin-bottom: 0;
+      text-align: right;
+    }
+  }
+}
+
+.slideOptions {
+  .quantity {
+    margin-top: 3px;
+
+    button {
+      background: none;
+      border: none;
+      color: #000000;
+      font-size: 0px;
+      line-height: 0;
+      padding: 0;
+
+      &:hover {
+        background: none;
+      }
+    }
+
+    span {
+      color: #000000;
+      cursor: default;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1;
+      width: 18px;
+      text-align: center;
+    }
+  }
+}
+
+.close {
+  .btnClose {
+    filter: drop-shadow(0px 1px 1px rgba(0, 0, 0, 0.75));
+    cursor: pointer;
+    position: absolute;
+    top: 2px;
+    right: 2px;
+  }
+}
+
+.cartLabel {
+  p {
+    font-size: 12px;
+    text-align: center;
+    line-height: 1.2;
+    margin: 0;
+
+    /* Line clamp style for 2 lines */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+}
+
+.lottie {
+  svg {
+    width: 300px !important;
+
+    @include devices(md) {
+      width: 250px !important;
+    }
+  }
+}
+
+.btnBlack {
+  button {
+    background-color: #000000;
+    border: 0.5px solid rgba(97, 72, 28, 0.5);
+    border-radius: 5px;
+    color: #ffffff;
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+    text-decoration: none;
+    text-transform: uppercase;
+    min-width: 120px;
+    margin-top: 20px;
+    padding: 10px;
+    transition: $FM_TRANSITION;
+
+    &:hover {
+      border-color: $FM_TEXT_BROWN;
+      background-color: $FM_TEXT_BROWN;
+    }
+  }
+}
+
+@include devices(sm) {
+  .sliderContainer {
+    /* 
+        Swiper Slide Grid layout requirement
+        fixed height for one slider column (plus the space)
+    */
+    height: 190px;
+
+    .swiperSlide {
+      height: calc((100% - 10px) / 2) !important;
+    }
+  }
+
+  .slideContentContainer {
+    padding: 10px;
+  }
+}

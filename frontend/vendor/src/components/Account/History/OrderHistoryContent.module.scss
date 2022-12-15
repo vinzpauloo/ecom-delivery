@@ -1,0 +1,412 @@
+@import "../../../theme/_variables.scss";
+@import "../../../theme/mixins";
+
+.container {
+  h1 {
+    color: $FM_TEXT_BROWN;
+    font-size: 30px;
+    line-height: 1;
+
+    @include devices(md) {
+      font-size: 28px;
+    }
+
+    @include devices(sm) {
+      font-size: 24px;
+    }
+  }
+
+  p {
+    margin-bottom: 0;
+    line-height: 1.2;
+  }
+
+  .searchInput {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 39px;
+    input {
+      width: 100%;
+      height: 100%;
+      padding: 0 12px;
+      background: #f3f3f3;
+      border: 1px solid #dbdbdb;
+      box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.25);
+      border-radius: 5px;
+      &::placeholder {
+        font-weight: 300;
+        font-size: 12px;
+        line-height: 12px;
+        color: #7d7d7c;
+      }
+    }
+    .searchIcon {
+      position: absolute;
+      right: 20px;
+      width: 24px;
+      height: 24px;
+    }
+  }
+  .buttonContent {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    .buttons {
+      width: 138px;
+      height: 31px;
+      background: #d9d9d9;
+      border: 0.5px solid rgba(97, 72, 28, 0.5);
+      box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+      border-radius: 5px;
+      text-align: center;
+      padding: 0;
+      color: #000;
+      font-weight: 500;
+      font-size: 15px;
+      line-height: 15px;
+      &:hover {
+        background-color: #61481c;
+        color: #ffffff;
+      }
+    }
+  }
+
+  @include devices(md) {
+    padding: 20px;
+    min-height: 95%;
+  }
+  @include devices(sm) {
+    padding: 0px;
+    min-height: 95%;
+    .buttons {
+      width: 92px;
+      height: 29px;
+    }
+  }
+}
+
+@include devices(xs) {
+  .mobileHeader {
+    margin-top: 10px;
+    .headerH3 {
+      // background-color: #000;
+      h3 {
+        font-weight: 400;
+        font-size: 15px;
+        line-height: 15px;
+      }
+    }
+    .searchInput {
+      height: 23px !important;
+      width: 148px !important;
+      input {
+        width: 100%;
+        height: 100%;
+      }
+      .searchIcon {
+        height: 15px !important;
+        width: 15px !important;
+      }
+    }
+  }
+}
+
+.modalBody {
+  background: #fdf5e7;
+  .modalHeaderContent {
+    height: 50px;
+    background: #ffffff;
+    border-bottom: 1px solid #000;
+    .modalHeader {
+      font-weight: 500;
+      font-size: 17px;
+      line-height: 17px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #000000;
+      text-align: center;
+      padding: 0;
+    }
+  }
+  .orderDeliveryContainer {
+    height: 34px;
+    margin: 8px 0 14px;
+    .modalRow {
+      border-top: 1px solid #000;
+      border-bottom: 1px solid #000;
+      background: #ffffff;
+      height: 34px;
+      .modalHeader {
+        margin: 0;
+        font-weight: 400;
+        font-size: 17px;
+        line-height: 17px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #000000;
+        text-align: center;
+        padding: 0;
+        &:first-child {
+          background-color: #a47e3b;
+          font-size: 17px;
+          line-height: 23px;
+          display: flex;
+          align-items: center;
+          text-align: center;
+          color: #ffffff;
+          text-shadow: 0px 0px 2px rgba(0, 0, 0, 0.5);
+          border-right: 1px solid #000;
+        }
+      }
+    }
+  }
+}
+
+.innerContainer {
+  margin: 30px 0 0;
+
+  .searchBar {
+    margin: 0 0 30px;
+  }
+
+  .item:not(:last-child) {
+    margin-bottom: 60px;
+  }
+
+  .btnBack {
+    background-color: $FM_BG_GRAY;
+    border: 0.5px solid rgba(97, 72, 28, 0.5);
+    border-radius: 5px;
+    box-shadow: $FM_BUTTON_SHADOW;
+    color: #000000;
+    display: inline-block;
+    font-weight: 500;
+    line-height: 1;
+    text-align: center;
+    text-decoration: none;
+    min-width: 150px;
+    padding: 8px;
+  }
+
+  .btnView {
+    text-align: center;
+
+    a {
+      background-color: $FM_BG_YELLOW;
+      border: 0.5px solid $FM_TEXT_BROWN;
+      border-radius: 3px;
+      color: #ffffff;
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 500;
+      height: 30px;
+      line-height: 30px;
+      padding: 0;
+      text-decoration: none;
+      text-shadow: $FM_TEXT_SHADOW;
+      text-transform: uppercase;
+      width: 100px;
+      transition: $FM_TRANSITION;
+
+      &:hover {
+        opacity: 0.75;
+      }
+    }
+  }
+
+  @include devices(md) {
+    .item:not(:last-child) {
+      margin-bottom: 40px;
+    }
+  }
+
+  @include devices(sm) {
+    .item:not(:last-child) {
+      margin-bottom: 25px;
+    }
+  }
+}
+
+.btnLoadMore {
+  background-color: $FM_BG_GRAY;
+  border: 0.5px solid #000000;
+  border-radius: 5px;
+  color: #000000;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  text-transform: uppercase;
+  padding: 10px 20px;
+
+  &:hover {
+    border-color: rgba(97, 72, 28, 0.5);
+    background-color: rgba(97, 72, 28, 0.5);
+  }
+
+  @include devices(md) {
+    font-weight: 400;
+    margin: 10px 0;
+    padding: 8px 16px;
+  }
+}
+
+.orderId {
+  background-color: #a47e3b;
+  border: 0.5px solid $FM_TEXT_BROWN;
+  border-radius: 2px;
+
+  h6 {
+    color: #ffffff;
+    font-size: 16px;
+    line-height: 1;
+    margin: 0;
+    padding: 10px 5px;
+    text-shadow: $FM_TEXT_SHADOW;
+  }
+
+  @include devices(sm) {
+    h6 {
+      padding: 8px;
+    }
+  }
+}
+
+.orderDetails {
+  background-color: $FM_BG_GRAY3;
+  border: 1px solid $FM_TEXT_BROWN;
+  border-radius: 0px 5px 5px 5px;
+  font-size: 14px;
+  padding: 25px 30px 10px;
+
+  .value,
+  .label {
+    font-weight: 500;
+  }
+
+  @include devices(sm) {
+    padding: 10px 10px 15px;
+  }
+
+  @include devices(xs) {
+  }
+}
+
+.flexOnMobile {
+  .btnView {
+    display: none;
+  }
+
+  @include devices(sm) {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+
+    .orderId {
+      border-radius: 3px;
+      width: 123px;
+      height: 26px;
+      h6 {
+        padding: 5px;
+        font-weight: 600;
+        font-size: 12px;
+        line-height: 16px;
+        color: #ffffff;
+        text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.5);
+      }
+    }
+
+    .btnView {
+      display: block;
+
+      a {
+        padding: 8px;
+        border-radius: 3px;
+        height: 26px;
+        width: 82px;
+        font-weight: 700;
+        font-size: 8px;
+        line-height: 8px;
+        color: #ffffff;
+
+        text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.25);
+      }
+    }
+  }
+}
+
+@include devices(md) {
+  h4 {
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 20px;
+    /* identical to box height */
+
+    text-align: center;
+
+    color: #000000;
+  }
+  .orderDeliveryContainer {
+    margin: 15px 0;
+    height: 120px !important;
+    .contentContainer {
+      padding: 0 !important;
+      .idContent {
+        text-align: center;
+        .modalHeader {
+          border-top: 1px solid #000000;
+          border-bottom: 1px solid #000000;
+        }
+        .modalHeaderLabel {
+          background: #a47e3b;
+          border-top: 1px solid #000000;
+          border-bottom: 1px solid #000000;
+          color: #fff;
+        }
+      }
+      .row {
+        text-align: center;
+        border-top: 1px solid #000000;
+        border-bottom: 1px solid #000000;
+        border-left: 1px solid #000000;
+        .lable {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+      }
+    }
+  }
+}
+@include devices(md) {
+  .mobileButtonContent {
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    padding: 10px 0 60px;
+    .buttons {
+      width: 92px;
+      height: 29px;
+      background: #d9d9d9;
+      border: 0.5px solid rgba(97, 72, 28, 0.5);
+      box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+      border-radius: 5px;
+      text-align: center;
+      padding: 0;
+      color: #000;
+      font-weight: 500;
+      font-size: 15px;
+      line-height: 15px;
+      &:hover {
+        background-color: #61481c;
+        color: #ffffff;
+      }
+    }
+  }
+}

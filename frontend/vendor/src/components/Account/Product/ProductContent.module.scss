@@ -1,0 +1,507 @@
+@import "../../../theme/mixins.scss";
+
+.tableContainer {
+  form {
+    left: 0px;
+    top: 0px;
+
+    h3 {
+      // padding: 25px 25px 0px;
+      margin-left: 31px;
+    }
+  }
+
+  .searchInput {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 39px;
+    input {
+      width: 100%;
+      height: 100%;
+      padding: 0 12px;
+      background: #f3f3f3;
+      border: 1px solid #dbdbdb;
+      box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.25);
+      border-radius: 5px;
+      &::placeholder {
+        font-weight: 300;
+        font-size: 12px;
+        line-height: 12px;
+        color: #7d7d7c;
+      }
+    }
+    .searchIcon {
+      position: absolute;
+      right: 20px;
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .thumbNail {
+    border: 1px solid black;
+    border-radius: 4px;
+    padding: 1px;
+    width: 150px;
+    height: 100px;
+  }
+  .buttonsContent {
+    // margin-left: 50px;
+    display: flex;
+    align-content: center;
+    justify-content: flex-end;
+    .buttonCont {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    .btnAddProduct {
+      background: #d9d9d9;
+      color: black;
+      font-weight: 400;
+      width: 138px;
+      border-color: #61481c;
+      margin-bottom: 20px;
+
+      &:hover {
+        background-color: #61481c;
+        color: #d9d9d9;
+      }
+    }
+  }
+
+  .btnEdit {
+    background: #f8f2e9;
+    border-color: #61481c;
+    color: #61481c;
+    display: absolute;
+
+    width: 70px;
+    margin-right: 2px;
+
+    padding-top: 1px;
+    padding-bottom: 1px;
+
+    &:hover {
+      background-color: #61481c;
+      color: #d9d9d9;
+    }
+  }
+
+  .btnDelete {
+    background: #f8f2e9;
+    border-color: #61481c;
+    color: #61481c;
+    display: absolute;
+
+    width: 70px;
+
+    padding-top: 1px;
+    padding-bottom: 1px;
+
+    &:hover {
+      background-color: #61481c;
+      color: #d9d9d9;
+    }
+  }
+
+  .searchBar {
+    width: 300px;
+    background-color: #f3f3f3;
+    width: 435px;
+    height: 38px;
+    border-radius: 5px;
+
+    margin-left: 28px;
+
+    position: absolute;
+  }
+
+  .tHeader {
+    border: 1px;
+    background: #61481c;
+    color: white;
+    .textParagrap {
+      text-align: center;
+    }
+  }
+  .textParagrap2 {
+    text-align: center;
+  }
+
+  .tBody {
+    border: 1px;
+    height: 50px;
+
+    background: #fde9b1;
+  }
+
+  table {
+    border-collapse: separate;
+    border-spacing: 0 5px;
+  }
+
+  @include devices(md) {
+    text-align: center;
+    .mobileHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      .buttonsContent {
+        .btnAddProduct {
+          font-size: 10px;
+          line-height: 15px;
+          border-color: #61481c;
+          white-space: nowrap;
+          width: 70px !important;
+          &:hover {
+            background-color: #61481c;
+            color: #d9d9d9;
+          }
+        }
+      }
+    }
+
+    .btnEdit {
+      background: #f8f2e9;
+      border-color: #61481c;
+      color: #61481c;
+
+      width: 45px;
+      font-size: 7px;
+
+      &:hover {
+        background-color: #61481c;
+        color: #d9d9d9;
+      }
+    }
+
+    .btnDelete {
+      background: #f8f2e9;
+      border-color: #61481c;
+      color: #61481c;
+
+      width: 45px;
+      font-size: 7px;
+
+      &:hover {
+        background-color: #61481c;
+        color: #d9d9d9;
+      }
+    }
+
+    h3 {
+      font-size: 20px;
+      margin-bottom: 10px;
+      float: left;
+    }
+
+    .textParagrap {
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .textParagrap2 {
+      font-size: 9px;
+    }
+  }
+
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #61481c;
+    margin: 0 0 10px;
+    span {
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 16px;
+    }
+    .arrowContainer {
+      background-color: transparent;
+      border: transparent;
+      .arrow {
+        color: #61481c;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 26px;
+      }
+      &:hover {
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+.checkInput {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  input {
+    background: linear-gradient(180deg, #b8b8b8 0%);
+    box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1);
+    border: none;
+
+    &:checked {
+      background-color: #464646;
+    }
+  }
+}
+
+.modalHeader {
+  background: #e3d7c2;
+  border-color: black;
+}
+
+.modalBody {
+  background: #fff;
+  border-color: black;
+
+  .menuListBtn {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    button {
+      background: #d9d9d9;
+      border: 0.5px solid rgba(97, 72, 28, 0.5);
+      box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+      border-radius: 5px;
+      font-weight: 400;
+      font-size: 15px;
+      line-height: 15px;
+      color: #000000;
+      &:hover {
+        background-color: #61481c;
+        color: #d9d9d9;
+      }
+    }
+  }
+
+  .alert {
+    margin-bottom: 50px;
+  }
+
+  .thumbNail {
+    border: 1px solid black;
+    border-radius: 4px;
+    padding: 1px;
+    width: 150px;
+    height: 100px;
+  }
+
+  .inputForm {
+    background: #d9d9d9;
+    border: 0.5px solid rgba(97, 72, 28, 0.5);
+    color: #000000;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+    margin-bottom: 5px;
+  }
+
+  textarea {
+    background: #d9d9d9;
+    border: 0.5px solid rgba(97, 72, 28, 0.5);
+    color: #000000;
+    box-shadow: 2px 2px #d9d9d9;
+    margin-bottom: 5px;
+
+    resize: none;
+    height: 121px;
+    top: 21px;
+    radius: 10px;
+    border-radius: 10px;
+  }
+
+  .btnCategory {
+    width: 150px;
+    background: #61481c;
+    border-color: #61481c;
+    color: #d9d9d9;
+
+    &:hover {
+      background-color: #61481c;
+      color: #d9d9d9;
+    }
+  }
+
+  .btnCuisine {
+    width: 150px;
+    background: #61481c;
+    border-color: #61481c;
+    margin-bottom: 10px;
+    color: #d9d9d9;
+
+    &:hover {
+      background-color: #61481c;
+      color: #d9d9d9;
+    }
+  }
+
+  .availabilityContent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    border: 1px solid;
+    padding: 8px 0;
+    border-radius: 4px;
+    .availability {
+      display: flex;
+      flex-direction: row;
+      .switch {
+        input {
+          background: linear-gradient(180deg, #b8b8b8 0%);
+          box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1);
+          border: none;
+          &:checked {
+            background-color: #464646;
+          }
+        }
+      }
+    }
+  }
+
+  .btnDiscard {
+    justify-content: center;
+    width: 138px;
+    margin-bottom: 10px;
+    background: #d9d9d9;
+    border-color: #61481c;
+    color: black;
+    text-align: center;
+    padding-top: 1px;
+
+    &:hover {
+      background-color: #61481c;
+      color: #d9d9d9;
+    }
+  }
+
+  .btnAddProduct {
+    justify-content: center;
+    width: 138px;
+    margin-bottom: 10px;
+    background: #d9d9d9;
+    border-color: #61481c;
+    color: black;
+    text-align: center;
+    padding-top: 1px;
+
+    &:hover {
+      background-color: #61481c;
+      color: #d9d9d9;
+    }
+  }
+
+  .imageUploadContent {
+    margin-top: 10px;
+  }
+
+  .btnUploadContent {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin: 0 10px;
+    .btnUpload {
+      justify-content: center;
+      width: 120px;
+      margin-bottom: 10px;
+      background: #d9d9d9;
+      border-color: #61481c;
+      color: black;
+      text-align: center;
+      padding-top: 1px;
+      margin: 10px;
+
+      &:hover {
+        background-color: #61481c;
+        color: #d9d9d9;
+      }
+    }
+  }
+
+  .btnSaveMenu {
+    justify-content: center;
+    width: 138px;
+    margin-bottom: 10px;
+    background: #d9d9d9;
+    border-color: #61481c;
+    color: black;
+    text-align: center;
+    padding-top: 1px;
+
+    &:hover {
+      background-color: #61481c;
+      color: #d9d9d9;
+    }
+  }
+
+  .btnYes {
+    justify-content: center;
+    width: 138px;
+    margin-bottom: 10px;
+    background: #d9d9d9;
+    border-color: #61481c;
+    color: black;
+    text-align: center;
+    padding-top: 1px;
+
+    &:hover {
+      background-color: #61481c;
+      color: #d9d9d9;
+    }
+  }
+
+  .btnNo {
+    justify-content: center;
+    width: 138px;
+    margin-bottom: 10px;
+    background: #d9d9d9;
+    border-color: #61481c;
+    color: black;
+    text-align: center;
+    padding-top: 1px;
+
+    &:hover {
+      background-color: #61481c;
+      color: #d9d9d9;
+    }
+  }
+}
+
+.modalFooter {
+  background: #e3d7c2;
+  border-color: black;
+}
+
+@include devices(md) {
+  .availabilityContent {
+    border: none !important;
+    padding: 0 12px;
+  }
+  .menuListBtn {
+    button {
+      white-space: nowrap;
+    }
+  }
+  .btnUploadContent {
+    justify-content: center !important;
+    .btnUpload {
+      margin: 5px !important;
+    }
+  }
+  .mobileRow {
+    margin-top: 15px;
+  }
+  .imageUploadContent,
+  .imageItem {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .thumbNail {
+      margin-left: 0;
+    }
+  }
+}
