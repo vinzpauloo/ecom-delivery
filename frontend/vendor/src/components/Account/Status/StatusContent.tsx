@@ -66,6 +66,7 @@ const StatusContent: React.FC<ContainerProps> = ({}) => {
   const [restaurantChatroom, setRestaurantChatroom] = useState("");
   const [isGuest, setIsGuest] = useState(false);
   const { updateOrder, getOrdersById } = useOrder();
+  const [isloaded, setIsloaded] = useState(false);
   const navigate = useNavigate();
 
   const [order, setOrder] = useState<ForPreparingItem | null>(null);
@@ -92,28 +93,25 @@ const StatusContent: React.FC<ContainerProps> = ({}) => {
 
   const loadReceivedOrder = async () => {
     const response = await getOrdersById(id);
-    console.log("getOrdersById response", !!response.guest_id);
+    // *console.log("getOrdersById response", !!response.guest_id);
     setStatus(response);
     setOrder(response);
     setIsGuest(!!response.guest_id);
-    console.log("@@@", response);
+    // *console.log("@@@", response);
 
-    // if (
-    //   response.order_status != "canceled" &&
-    //   response.order_status != "delivered"
-    // ) {
-    //   const orderRoom = `Order-Channel-${response.id}`;
-    //   initializeOrderChannel(orderRoom);
-    // }
+    const orderRoom = `Order-Channel-${response.id}`;
+    initializeOrderChannel(orderRoom);
 
     if (!!!response.guest_id) {
       // Initialize chat channel for merchant
+      // console.log("customer");
       const merchantChatRoom = `ChatRoom-C${response.customer_id}-M${response.restaurant_id}`;
       initializeChatChannel(
         merchantChatRoom,
         setRestaurantChat,
         setRestaurantChatroom
       );
+      setIsloaded(true);
     } else {
       // Initialize chat channel for merchant
       const merchantChatRoom = `ChatRoom-G${response.guest_id}-M${response.restaurant_id}`;
@@ -122,6 +120,7 @@ const StatusContent: React.FC<ContainerProps> = ({}) => {
         setRestaurantChat,
         setRestaurantChatroom
       );
+      setIsloaded(true);
     }
   };
 
@@ -134,7 +133,7 @@ const StatusContent: React.FC<ContainerProps> = ({}) => {
     const channelChat = pusher.subscribe(chatRoom);
     channelChat.bind("Message-Event", (data: any) => {
       const chatData = JSON.parse(data.message);
-      console.log("New restaurant chat!", chatData);
+      // *console.log("New restaurant chat!", chatData);
       setChat((current: any) => {
         if (current?.length) {
           return [...current, chatData];
@@ -144,8 +143,18 @@ const StatusContent: React.FC<ContainerProps> = ({}) => {
     });
   };
 
+  const initializeOrderChannel = (orderRoom: string) => {
+    const channel = pusher.subscribe(orderRoom);
+    channel.bind("Order-Updated-Event", (data: any) => {
+      const parsedData = JSON.parse(data.message);
+      const status = parsedData.status;
+
+      setOrder({ ...parsedData, order_status: status });
+    });
+  };
+
   const handleAccept = async (id: any) => {
-    console.log(id);
+    // *console.log(id);
     setUpdateModalShow(true);
     const response = await updateOrder(id, "preparing");
     // alert("updated status preparing successfully");
@@ -234,13 +243,15 @@ const StatusContent: React.FC<ContainerProps> = ({}) => {
         </Row>
       </div>
       <div className={styles.chatContainer}>
-        <Chat
-          orderId={id}
-          restaurantChat={restaurantChat}
-          setRestaurantChat={setRestaurantChat}
-          isGuest={isGuest}
-          restaurantChatroom={restaurantChatroom}
-        />
+        {isloaded && (
+          <Chat
+            orderId={id}
+            restaurantChat={restaurantChat}
+            setRestaurantChat={setRestaurantChat}
+            isGuest={isGuest}
+            restaurantChatroom={restaurantChatroom}
+          />
+        )}
       </div>
       <UpdateSuccessModal
         show={updateModalShow}

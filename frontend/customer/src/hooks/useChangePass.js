@@ -107,12 +107,11 @@ export const useChangePass = () => {
         },
       };
 
-      const response = await axios.post(endpoint, data, options);
+      const response = await axios.put(endpoint, data, options);
       // END: Access update user password API
 
-      if (response.status === 200) {
+      if (response.status === 201) {
         const { data } = response.data;
-
         return data;
       }
     } catch (err) {

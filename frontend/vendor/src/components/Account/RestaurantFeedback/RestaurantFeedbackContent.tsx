@@ -17,6 +17,7 @@ type personalFeedback = {
   restaurant_rating: number;
   restaurant_review: string;
   restaurant_reviewed_at: string;
+  photo: [{ photo: string }];
 };
 
 const CustomerRating = ({ rating = 0 }: { rating: number | undefined }) => {
@@ -59,7 +60,7 @@ const RestaurantFeedbackContent: React.FC<ContainerProps> = ({}) => {
 
   const loadRestaurant = async () => {
     const response = await getRestaurantsById(id);
-    console.log("getRestaurantsById response", response);
+    // *console.log("getRestaurantsById response", response);
 
     const thisRestaurant = {
       restaurant_id: response.id,
@@ -75,7 +76,7 @@ const RestaurantFeedbackContent: React.FC<ContainerProps> = ({}) => {
 
   const loadRestaurantReviews = async () => {
     const response = await getRestaurantReviewsById(id, { reviews: "true" });
-    console.log("getRestaurantReviewsById response", response);
+    // *console.log("getRestaurantReviewsById response", response);
 
     setReviews(response.reviews);
   };
@@ -223,19 +224,31 @@ const RestaurantFeedbackContent: React.FC<ContainerProps> = ({}) => {
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Container className={styles.modalContainer}>
           <div className="d-flex gap-2">
-            <img src={placeholder} />
+            <img src={placeholder} className={styles.profile} />
             <div className={styles.rating}>
               <h4 className="mb-0">
                 {personalFeedback?.first_name} {personalFeedback?.last_name}
               </h4>
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <CustomerRating rating={personalFeedback?.restaurant_rating} />{" "}
-                {" | "}
-                {personalFeedback?.restaurant_reviewed_at.split(" ")[0]}
+              <div className="d-flex gap-2 align-items-center">
+                <div>
+                  <CustomerRating
+                    rating={personalFeedback?.restaurant_rating}
+                  />
+                </div>
+                <span className={styles.dateLabel}>
+                  {getDate(personalFeedback?.restaurant_reviewed_at || "")}
+                </span>
               </div>
             </div>
           </div>
-          <p className="mb-0 mt-3">{personalFeedback?.restaurant_review} </p>
+          <p className="mb-0 mt-3">{personalFeedback?.restaurant_review}</p>
+          <div className={styles.preview}>
+            {personalFeedback?.photo.map((photo, index) => (
+              <div key={index} className={styles.imgContainer}>
+                <img key={index} src={photo.photo} alt="Preview" />
+              </div>
+            ))}
+          </div>
         </Container>
       </Modal>
     </>

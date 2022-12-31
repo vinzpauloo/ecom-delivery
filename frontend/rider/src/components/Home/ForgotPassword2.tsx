@@ -14,6 +14,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 
 import Lottie from "lottie-react";
 import saveSuccess from "../../assets/save-success.json";
+import { useSignIn } from "react-auth-kit";
 
 // Setup form schema & validation
 interface IFormInputs {
@@ -57,7 +58,7 @@ const ResetPasswordSuccessModal = (props: any) => {
               transition: "all 0.3s ease-in-out",
             }}
           >
-            Back To Home
+            Go to Login Page
           </Link>
         </div>
       </Modal.Body>
@@ -69,6 +70,7 @@ const ForgotPassword2: React.FC<ContainerProps> = ({}) => {
   const [error, setError] = useState("");
   const [apiErrors, setApiErrors] = useState<string[]>([]);
   const { calculateHash } = useCalculateHash();
+  const signIn = useSignIn();
 
   const { resetPassword } = useChangePass();
 
@@ -85,15 +87,11 @@ const ForgotPassword2: React.FC<ContainerProps> = ({}) => {
   const onSubmit = async (data: IFormInputs) => {
     try {
       // START: Forgot password API
-      console.log("resetPassword", data);
+      // console.log("resetPassword", data);
 
-      const response = await resetPassword(data);
-      console.log("reset PW", response);
+      const response = await resetPassword({ ...data, type: "Rider" });
+      // console.log("reset PW", response);
       // END: Access password API
-
-      if (response === undefined) {
-        setModal(true);
-      }
 
       if (response.error) {
         // Prepare errors
@@ -102,13 +100,21 @@ const ForgotPassword2: React.FC<ContainerProps> = ({}) => {
           arrErrors.push("" + value);
         }
         setApiErrors(arrErrors);
+      } else {
+        setModal(true);
+        // signIn({
+        //   token: response.token,
+        //   expiresIn: 3600,
+        //   tokenType: "Bearer",
+        //   authState: response.user,
+        // });
       }
     } catch (err) {
       if (err && err instanceof AxiosError)
         setError("*" + err.response?.data.message);
       else if (err && err instanceof Error) setError(err.message);
 
-      console.log("Error", err);
+      // console.log("Error", err);
     }
   };
 
@@ -234,7 +240,7 @@ const ForgotPassword2: React.FC<ContainerProps> = ({}) => {
         <Form.Group className="mb-4 position-relative">
           <Form.Control
             size="lg"
-            type="text"
+            type="password"
             placeholder="Enter new password"
             onKeyUp={() => setError("")}
             required
@@ -245,7 +251,7 @@ const ForgotPassword2: React.FC<ContainerProps> = ({}) => {
         <Form.Group className="mb-4 position-relative">
           <Form.Control
             size="lg"
-            type="text"
+            type="password"
             placeholder="Confirm new password"
             onKeyUp={() => setError("")}
             required

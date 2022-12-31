@@ -12,6 +12,8 @@ import ForgotPassword from "./ForgotPassword";
 import styles from "./LoginForm.module.scss";
 import constants from "../../utils/constants.json";
 import { useCalculateHash } from "../../hooks/useCalculateHash";
+import { Row } from "react-bootstrap";
+import { Col } from "react-bootstrap";
 
 // Setup form schema & validation
 interface IFormInputs {
@@ -26,7 +28,7 @@ const schema = yup
     password: yup
       .string()
       .min(6, constants.form.error.passwordMin)
-      .max(16, constants.form.error.passwordMax)
+      .max(32, constants.form.error.passwordMax)
       .required(),
   })
   .required();
@@ -111,7 +113,7 @@ const LoginForm: React.FC<ContainerProps> = ({}) => {
         setError("*" + err.response?.data.message);
       else if (err && err instanceof Error) setError(err.message);
 
-      console.log("Error", err);
+      // *console.log("Error", err);
     }
   };
 
@@ -161,20 +163,26 @@ const LoginForm: React.FC<ContainerProps> = ({}) => {
         </Form.Group>
 
         <div className="mb-5 position-relative text-end">
-          <Link
-            to="/forgot-password"
-            // onClick={() => setModalShow(true)}
-            className={styles.forgotPassword}
-          >
-            Forgot Password?
-          </Link>
+          <Row>
+            <Col>
+              <div className={styles.errors}>
+                <p>{error}</p>
+                <p>{errors.username?.message}</p>
+                <p>{errors.password?.message}</p>
+              </div>
+            </Col>
+            <Col>
+              <Link
+                to="/forgot-password"
+                // onClick={() => setModalShow(true)}
+                className={styles.forgotPassword}
+              >
+                Forgot Password?
+              </Link>
+            </Col>
+          </Row>
 
           {/* Error Messages */}
-          <div className={styles.errors}>
-            <p>{error}</p>
-            <p>{errors.username?.message}</p>
-            <p>{errors.password?.message}</p>
-          </div>
         </div>
 
         <Button variant="primary" size="lg" type="submit">

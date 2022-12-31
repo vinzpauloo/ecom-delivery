@@ -26,6 +26,11 @@ interface IFormInputs {
 const schema = yup
   .object({
     email: yup.string().email(constants.form.error.email).required(),
+    password: yup
+      .string()
+      .min(7, constants.form.error.passwordMin)
+      .max(32, constants.form.error.passwordMax)
+      .required(),
   })
   .required();
 
@@ -57,7 +62,7 @@ const ResetPasswordSuccessModal = (props: any) => {
               transition: "all 0.3s ease-in-out",
             }}
           >
-            Back To Home
+            Go to Login Page
           </Link>
         </div>
       </Modal.Body>
@@ -85,15 +90,10 @@ const ForgotPassword2: React.FC<ContainerProps> = ({}) => {
   const onSubmit = async (data: IFormInputs) => {
     try {
       // START: Forgot password API
-      console.log("resetPassword", data);
+      // *console.log("resetPassword", data);
 
-      const response = await resetPassword(data);
-      console.log("reset PW", response);
+      const response = await resetPassword({ ...data, type: "Merchant" });
       // END: Access password API
-
-      if (response === undefined) {
-        setModal(true);
-      }
 
       if (response.error) {
         // Prepare errors
@@ -102,13 +102,15 @@ const ForgotPassword2: React.FC<ContainerProps> = ({}) => {
           arrErrors.push("" + value);
         }
         setApiErrors(arrErrors);
+      } else {
+        setModal(true);
       }
     } catch (err) {
       if (err && err instanceof AxiosError)
         setError("*" + err.response?.data.message);
       else if (err && err instanceof Error) setError(err.message);
 
-      console.log("Error", err);
+      // *console.log("Error", err);
     }
   };
 
@@ -234,7 +236,7 @@ const ForgotPassword2: React.FC<ContainerProps> = ({}) => {
         <Form.Group className="mb-4 position-relative">
           <Form.Control
             size="lg"
-            type="text"
+            type="password"
             placeholder="Enter new password"
             onKeyUp={() => setError("")}
             required
@@ -245,7 +247,7 @@ const ForgotPassword2: React.FC<ContainerProps> = ({}) => {
         <Form.Group className="mb-4 position-relative">
           <Form.Control
             size="lg"
-            type="text"
+            type="password"
             placeholder="Confirm new password"
             onKeyUp={() => setError("")}
             required

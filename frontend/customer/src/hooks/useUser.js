@@ -39,7 +39,7 @@ export const useUser = () => {
   const getUser = async () => {
     try {
       // START: Access user API
-      const endpoint = "api/user";
+      const endpoint = "api/user/profile";
       const options = {
         headers: {
           Authorization: authHeader(),
@@ -62,7 +62,7 @@ export const useUser = () => {
       else if (err && err instanceof Error) error = err.message;
 
       console.log("Error", err);
-      return error;
+      return { error };
     }
   };
 

@@ -26,8 +26,8 @@ const schema = yup
     username: yup.string(),
     password: yup
       .string()
-      .min(6, constants.form.error.passwordMin)
-      .max(16, constants.form.error.passwordMax)
+      .min(7, constants.form.error.passwordMin)
+      .max(32, constants.form.error.passwordMax)
       .required(),
   })
   .required();
@@ -108,7 +108,7 @@ const LoginForm: React.FC<ContainerProps> = ({}) => {
         setError("*" + err.response?.data.message);
       else if (err && err instanceof Error) setError(err.message);
 
-      console.log("Error", err);
+      // console.log("Error", err);
     }
   };
 

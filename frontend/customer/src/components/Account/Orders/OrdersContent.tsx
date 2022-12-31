@@ -174,7 +174,11 @@ const OrdersContent: React.FC<ContainerProps> = ({}) => {
   const loadOrders = async (page: number) => {
     setIsLoading(true);
 
-    const response = await getOrders({ page });
+    const response = await getOrders({
+      page,
+      order: "created_at",
+      order_by: "desc",
+    });
     console.log("getOrders response", response);
 
     setOrders((current) => [...current, ...response.data]);
@@ -205,7 +209,7 @@ const OrdersContent: React.FC<ContainerProps> = ({}) => {
           <h5 className="text-center">No orders found.</h5>
         )}
 
-        {orders?.length && currentPage < lastPage && (
+        {orders?.length && currentPage < lastPage ? (
           <div className="text-center">
             <Button
               variant="primary"
@@ -215,10 +219,14 @@ const OrdersContent: React.FC<ContainerProps> = ({}) => {
               {!isLoading ? "Load more" : "Loading ..."}
             </Button>
           </div>
+        ) : (
+          ""
         )}
 
-        {!isLoading && currentPage === lastPage && (
+        {!isLoading && currentPage === lastPage && orders?.length ? (
           <h5 className="text-center">You have reached your last order.</h5>
+        ) : (
+          ""
         )}
       </div>
     </div>

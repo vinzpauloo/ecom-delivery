@@ -10,6 +10,7 @@ import statusIsReceived from "../../../assets/images/order-received.png";
 import statusIsPreparing from "../../../assets/images/kitchen-prep.png";
 import statusIsPreparingAlt from "../../../assets/images/order-preparing-alt.png";
 import statusIsOtw from "../../../assets/images/rider-on-the-way.png";
+import statusIsOtwAlt from "../../../assets/images/order-otw-alt.png";
 import statusIsDelivered from "../../../assets/images/delivered.png";
 import OrderCancel from "../../../assets/images/order-cancel.png";
 import OrderDelivered from "../../../assets/images/order-delivered.png";
@@ -98,6 +99,7 @@ const OrderContent: React.FC<ContainerProps> = ({}) => {
   const { getOrdersByIdGuest } = useOrders();
   const isAuthenticated = useIsAuthenticated();
   const { updateOrder, getOrdersById, acceptOrder } = useOrder();
+  const [isloaded, setIsloaded] = useState(false);
   const [forDelivery, setForDelivery] = useState<ForDeliveryItem[]>([]);
   const [status, setStatus] = useState<ForDeliveryItem>();
   const [orderData, setOrderData] = useState<any>([]);
@@ -128,148 +130,67 @@ const OrderContent: React.FC<ContainerProps> = ({}) => {
   const loadOrderForDelivery = async (status: string) => {
     const params = { status: status };
     const response = await getForDeliveryOTW(params);
-    console.log("getForDelivery", response);
+    // console.log("getForDelivery", response);
     setForDelivery(response.data);
   };
 
   const handleAccept = async () => {
-    console.log(id);
-    setModalShow(true);
     const response = await updateOrder(id, "otw");
-    // alert("updated status otw successfully");
-    // navigate(`/account/orders/${id}/otw`);
 
-    console.log(response);
     setOrderData(response);
+    setModalShow(true);
   };
 
   const [productItem, setProductItem] = useState<TOrder>();
 
-  const [orderStatus, setOrderStatus] = useState("pending");
+  const [orderStatus, setOrderStatus] = useState("received");
 
   const handleClickItem = async (props: any) => {
     const response = await getOrdersById(props);
-    console.log("getOrdersById response", response);
     setProductItem(response);
   };
 
   const handleDelivered = async () => {
-    console.log(id);
-    setModalShow(true);
-    const response = await updateOrder(id, "delivered");
-    // alert("updated status delivered successfully");
-
-    navigate(`/account/order-history`);
-
-    // console.log(response);
-    // setOrderData(response);
+    await updateOrder(id, "delivered");
+    navigate(`/account/for-delivery`);
+    window.location.reload();
   };
 
   const loadOrder = async () => {
-    // if (isAuthenticated()) {
-    //   const response = await getOrdersById(id);
-    //   console.log("getOrdersById response", response);
-    //   const thisRider = {
-    //     order_id: response.id,
-    //     rider_id: response.rider_id,
-    //     rider_name: response.rider_name,
-    //     rider_photo: response.rider_photo,
-    //     rider_vehicle_brand: response.rider_vehicle_brand,
-    //     rider_vehicle_model: response.rider_vehicle_model,
-    //     rider_average_rating: response.rider_average_rating,
-    //     plate_number: response.plate_number,
-    //   };
-    //   setOrder(response);
-    //   setOrderStatus(response.order_status);
-    //   setRider(thisRider);
-    //   setIsGuest(!!response.guest_id);
-    //   const orderRoom = `Order-Channel-${response.id}`;
-    //   initializeOrderChannel(orderRoom);
-    //   if (response.rider_id) {
-    //     const riderChatRoom = `ChatRoom-C${response.customer_id}-R${response.rider_id}`;
-    //     initializeChatChannel(riderChatRoom, setRiderChat);
-    //   }
-    // } else {
-    //   const guestSession = localStorage.getItem("guestSession");
-    //   const response = await getOrdersByIdGuest(id, guestSession);
-    //   console.log("getOrdersByIdGuest response", response);
-    //   const thisRider = {
-    //     order_id: response.id,
-    //     rider_id: response.rider_id,
-    //     rider_name: response.rider_name,
-    //     rider_photo: response.rider_photo,
-    //     rider_vehicle_brand: response.rider_vehicle_brand,
-    //     rider_vehicle_model: response.rider_vehicle_model,
-    //     rider_average_rating: response.rider_average_rating,
-    //     plate_number: response.plate_number,
-    //   };
-    //   setOrder(response);
-    //   setOrderStatus(response.order_status);
-    //   setProducts(response.products);
-    //   setRider(thisRider);
-    //   const orderRoom = `Order-Channel-${response.id}`;
-    //   initializeOrderChannel(orderRoom);
-    //   if (response.rider_id) {
-    //     const riderChatRoom = `ChatRoom-G${response.guest_id}-R${response.rider_id}`;
-    //     initializeChatChannel(riderChatRoom, setRiderChat);
-    //   }
-    // }
-
     const response = await getOrdersById(id);
-    console.log("getOrdersById response", !!response.guest_id);
     setStatus(response);
     setOrder(response);
+    setOrderStatus(response.order_status);
     setIsGuest(!!response.guest_id);
     setProducts(response.products);
+
+    const orderRoom = `Order-Channel-${response.id}`;
+    initializeOrderChannel(orderRoom);
+
     if (!!!response.guest_id) {
       // Initialize chat channel for merchant
       const riderChatRoom = `ChatRoom-C${response.customer_id}-R${response.rider_id}`;
       initializeChatChannel(riderChatRoom, setRiderChat, setRiderChatroom);
+      setIsloaded(true);
+      setOrderStatus(response.order_status);
     } else {
       // Initialize chat channel for merchant
       const riderChatRoom = `ChatRoom-G${response.guest_id}-R${response.rider_id}`;
       initializeChatChannel(riderChatRoom, setRiderChat, setRiderChatroom);
+      setIsloaded(true);
+      setOrderStatus(response.order_status);
     }
   };
 
-  // const initializeOrderChannel = (orderRoom: string) => {
-  //   const channel = pusher.subscribe(orderRoom);
-  //   channel.bind("Order-Updated-Event", (data: any) => {
-  //     const parsedData = JSON.parse(data.message);
-  //     const status = parsedData.status;
+  const initializeOrderChannel = (orderRoom: string) => {
+    const channel = pusher.subscribe(orderRoom);
+    channel.bind("Order-Updated-Event", (data: any) => {
+      const parsedData = JSON.parse(data.message);
+      const status = parsedData.status;
 
-  //     console.log(parsedData);
-
-  //     setOrder({ ...parsedData, order_status: status });
-  //     setOrderStatus(status);
-
-  //     if (status == "canceled" || status == "delivered") {
-  //       pusher.unsubscribe(orderRoom);
-  //     } else {
-  //       if (status != "canceled") {
-  //         const thisRider = {
-  //           order_id: parsedData.id,
-  //           rider_id: parsedData.rider_id,
-  //           rider_name: parsedData.rider_name,
-  //           rider_photo: parsedData.rider_photo,
-  //           rider_vehicle_brand: parsedData.rider_vehicle_brand,
-  //           rider_vehicle_model: parsedData.rider_vehicle_model,
-  //           rider_average_rating: parsedData.rider_average_rating,
-  //           plate_number: parsedData.plate_number,
-  //         };
-  //         setRider(thisRider);
-  //       }
-
-  //       if (status == "otw") {
-  //         if (parsedData.rider_id) {
-  //           // Initialize chat channel for rider
-  //           const riderChatRoom = `ChatRoom-C${parsedData.customer_id}-R${parsedData.rider_id}`;
-  //           initializeChatChannel(riderChatRoom, setRiderChat);
-  //         }
-  //       }
-  //     }
-  //   });
-  // };
+      setOrder({ ...parsedData, order_status: status });
+    });
+  };
 
   const initializeChatChannel = (
     chatRoom: string,
@@ -277,12 +198,12 @@ const OrderContent: React.FC<ContainerProps> = ({}) => {
     setChatroom: any
   ) => {
     setChatroom(chatRoom);
-    console.log("setChatroom", chatRoom);
+    // console.log("setChatroom", chatRoom);
 
     const channelChat = pusher.subscribe(chatRoom);
     channelChat.bind("Message-Event", (data: any) => {
       const chatData = JSON.parse(data.message);
-      console.log("New chat!", chatData);
+      // console.log("New chat!", chatData);
       setChat((current: any) => {
         if (current?.length) {
           return [...current, chatData];
@@ -473,13 +394,17 @@ const OrderContent: React.FC<ContainerProps> = ({}) => {
           <Col>
             <div className={styles.status}>
               <div className={styles.imgContainer}>
-                <img src={statusIsPreparing} alt="" />
-                {order?.order_status === "preparing" && (
+                {order?.order_status !== "preparing" ? null : (
+                  <img src={statusIsPreparing} alt="" />
+                )}
+                {order?.order_status === "preparing" ? (
                   <img
                     src={statusIsPreparingAlt}
                     alt=""
                     className={styles.altImg}
                   />
+                ) : (
+                  <img src={statusIsPreparing} alt="" />
                 )}
                 <p>Kitchen Preparing ...</p>
               </div>
@@ -488,8 +413,17 @@ const OrderContent: React.FC<ContainerProps> = ({}) => {
           </Col>
           <Col>
             <div className={styles.status}>
-              <img src={statusIsOtw} alt="" />
-              <p>Rider on its way</p>
+              <div className={styles.imgContainer}>
+                {order?.order_status !== "otw" ? null : (
+                  <img src={statusIsOtw} alt="" />
+                )}
+                {order?.order_status === "otw" ? (
+                  <img src={statusIsOtwAlt} alt="" className={styles.altImg} />
+                ) : (
+                  <img src={statusIsOtw} alt="" />
+                )}
+                <p>Rider On It's Way</p>
+              </div>
             </div>
 
             <Button
@@ -498,7 +432,7 @@ const OrderContent: React.FC<ContainerProps> = ({}) => {
                 handleAccept();
                 handleClickItem(id);
               }}
-              className={styles.activateBtn}
+              className={`${styles.activateBtn}`}
               // onClick={() => setModalShow(true)}
             >
               Activate
@@ -542,14 +476,16 @@ const OrderContent: React.FC<ContainerProps> = ({}) => {
         </h6>
       </div> */}
       <div className={styles.chatContainer}>
-        <Chat
-          orderId={id}
-          riderChat={riderChat}
-          setRiderChat={setRiderChat}
-          orderStatus={orderStatus}
-          isGuest={isGuest}
-          riderChatroom={riderChatroom}
-        />
+        {isloaded && (
+          <Chat
+            orderId={id}
+            riderChat={riderChat}
+            setRiderChat={setRiderChat}
+            orderStatus={orderStatus}
+            isGuest={isGuest}
+            riderChatroom={riderChatroom}
+          />
+        )}
       </div>
     </div>
   );

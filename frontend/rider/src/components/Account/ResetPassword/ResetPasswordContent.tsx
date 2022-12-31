@@ -23,15 +23,19 @@ interface IFormInputs {
 
 const schema = yup
   .object({
-    password: yup.string().min(6, constants.form.error.passwordMin).required(),
+    password: yup
+      .string()
+      .min(7, constants.form.error.passwordMin)
+      .max(32, constants.form.error.passwordMax)
+      .required(),
     password_confirmation: yup
       .string()
       .oneOf([yup.ref("password"), null], constants.form.error.passwordConfirm)
       .required(),
     current_password: yup
       .string()
-      .min(6, constants.form.error.passwordMin)
-      .max(16, constants.form.error.passwordMax)
+      .min(7, constants.form.error.passwordMin)
+      .max(32, constants.form.error.passwordMax)
       .required(),
   })
   .required();
@@ -77,10 +81,10 @@ const ResetPasswordContent: React.FC<ContainerProps> = ({}) => {
   });
 
   const onSubmit = async (data: IFormInputs) => {
-    console.log("Requesting updateUser ...");
+    // console.log("Requesting updateUser ...");
 
     const response = await updatePassword(data);
-    console.log("updateUser response", response);
+    // console.log("updateUser response", response);
 
     if (response === undefined) {
       setModalShow(true);

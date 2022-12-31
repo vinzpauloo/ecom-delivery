@@ -35,10 +35,13 @@ import updateSuccess from "../../../assets/update-success.json";
 // Setup form schema & validation
 interface IFormInputs {
   first_name: string;
+  last_name: string;
   name: string;
   description: string;
   address: string;
+  mobile: string;
   email: string;
+  restaurant_email: string;
   contact_number: string;
   photo: string;
 }
@@ -65,6 +68,10 @@ const schema = yup
 interface ContainerProps {}
 
 const API_KEY: string = process.env.REACT_APP_GOOGLE_PLACES_API_KEY || "";
+const DEFAULT_COORDINATES = {
+  lat: 9.568885793195934,
+  lng: 123.77310991287231,
+};
 
 const Map = ({
   lat,
@@ -79,7 +86,7 @@ const Map = ({
 
   return (
     <GoogleMap
-      zoom={18}
+      zoom={16}
       center={center}
       mapContainerClassName={styles.map}
       onClick={(e) => mapOnClick(e)}
@@ -94,13 +101,13 @@ const PlacesAutocomplete = ({
   setAddress,
   setLat,
   setLng,
-  handlePinLocation
+  handlePinLocation,
 }: {
   address: string;
   setAddress: any;
   setLat: any;
   setLng: any;
-  handlePinLocation:any;
+  handlePinLocation: any;
 }) => {
   const {
     ready,
@@ -141,14 +148,14 @@ const PlacesAutocomplete = ({
           />
         </Col>
         <Col className={`${styles.pinBtnContent}`}>
-              <Button
-                variant="primary"
-                className={styles.pinBtn}
-                onClick={handlePinLocation}
-              >
-                Pin my location
-              </Button>
-            </Col>
+          <Button
+            variant="primary"
+            className={styles.pinBtn}
+            onClick={handlePinLocation}
+          >
+            Pin my location
+          </Button>
+        </Col>
         <ComboboxPopover>
           <ComboboxList>
             {status === "OK" &&
@@ -166,8 +173,9 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const { reverseGeocode } = useGoogleAPI();
-  const [lat, setLat] = useState(0);
-  const [lng, setLng] = useState(0);
+  const [isGranted, setIsGranted] = useState(false);
+  const [lat, setLat] = useState(DEFAULT_COORDINATES.lat);
+  const [lng, setLng] = useState(DEFAULT_COORDINATES.lng);
   const [address, setAddress] = useState("");
   const [status, setStatus] = useState("");
   const [modalShow, setModalShow] = useState(false);
@@ -191,6 +199,8 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
     // data for submit
     setImages(imageList as never[]);
     setDefaultImg((prev) => !prev);
+
+    console.log(imageList);
   };
 
   const handleClick = (onImageUpload: any) => {
@@ -224,14 +234,31 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
   const onSubmit = async (data: IFormInputs) => {
     //working na sana
     let updatedData = {};
-    if(!!images){
-      updatedData = { ...data, address: address, photo: images[0].photo};
-    }
-    else{
-      updatedData = { ...data, address: address};
+    if (!!images) {
+      updatedData = { ...data, address: address, "photos[]": images[0].file };
+    } else {
+      updatedData = { ...data, address: address };
     }
 
-    const response = await updateUser(updatedData);
+    console.log(updatedData);
+
+    // Manually append each fields to a FormData
+    const formData = new FormData();
+    // formData.append("email", data.email);
+    // formData.append("mobile", data.mobile);
+    formData.append("first_name", data.first_name);
+    formData.append("last_name", data.last_name);
+    formData.append("name", data.name);
+    formData.append("description", data.description);
+    formData.append("address", address);
+    formData.append("contact_number", data.contact_number);
+    formData.append("restaurant_email", data.restaurant_email);
+    if (images?.length > 0) {
+      formData.append("photo", images[0].file);
+    }
+    formData.append("_method", "put");
+
+    const response = await updateUser(formData);
     if (!response.error) {
       setMessage(constants.form.success.updateProfile);
       setUpdateModalShow(true);
@@ -242,10 +269,10 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
 
   // Get user request
   const handleGetUser = async () => {
-    console.log("Requesting getUser ...");
-    
+    // *console.log("Requesting getUser ...");
+
     const response = await getUser();
-    console.log("handleGetUser response", response);
+    // *console.log("handleGetUser response", response);
     let defaultValues = {
       email: response.email,
       first_name: response.first_name,
@@ -255,6 +282,7 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
       contact_number: response.restaurant[0]?.contact_number,
       description: response.restaurant[0]?.description,
       name: response.restaurant[0]?.name,
+      restaurant_email: response.restaurant[0]?.restaurant_email,
     };
     reset(defaultValues);
     setAddress(response.restaurant[0]?.address);
@@ -272,11 +300,21 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
     setAddress(response);
   };
 
+  const mapErrorAlert = () => {
+    setTimeout(
+      () =>
+        alert("Location permission is not granted by your browser or device."),
+      500
+    );
+  };
+
   const handlePinLocation = () => {
     if (!navigator.geolocation) {
       setStatus("Geolocation is not supported by your browser");
+      alert("Geolocation is not supported by your browser or device.");
     } else {
-      setStatus("Locating...");
+      setStatus("Requesting location access ...");
+      setModalShow(true);
 
       navigator.permissions
         .query({
@@ -284,19 +322,17 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
         })
         .then(function (result) {
           if (result.state === "denied") {
-            alert(
-              "Location access is denied by your browser. Please grant location permission."
-            );
+            mapErrorAlert();
           }
 
-          // if (result.state === "granted") setModalShow(true);
+          if (result.state === "granted") setIsGranted(true);
 
           result.onchange = function () {
             if (result.state === "denied") {
-              alert(
-                "Location access is denied by your browser. Please grant location permission."
-              );
+              mapErrorAlert();
             }
+
+            if (result.state === "granted") setIsGranted(true);
           };
         });
 
@@ -305,7 +341,6 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
           setStatus("");
           setLat(position.coords.latitude);
           setLng(position.coords.longitude);
-          setModalShow(true);
 
           // Reverse Geocode
           handleReverseGeocode(
@@ -314,7 +349,7 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
           );
         },
         () => {
-          setStatus("Unable to retrieve your location");
+          setStatus("Unable to retrieve your location.");
         }
       );
     }
@@ -327,6 +362,8 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
     // Reverse Geocode
     handleReverseGeocode(e.latLng.lat(), e.latLng.lng());
   };
+
+  if (!isLoaded) return <div>Loading...</div>;
 
   const UpdateSuccessModal = (props: any) => {
     return (
@@ -377,11 +414,38 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
         centered
       >
         <Modal.Body className="p-0">
-          <p className={`px-2 py-2 mb-0 text-center ${styles.modalAddress}`}>
-            <strong>LOCATION:</strong> {address}
-          </p>
+          {/* Old flow, need */}
+          {/* {!isGranted ? (
+            <div className="text-center py-5">
+              <p>Waiting for location permission.</p>
+              <div className="spinner-grow text-primary" role="status"></div>
+            </div>
+          ) : (
+            <>
+              <p
+                className={`px-2 py-2 mb-0 text-center ${styles.modalAddress}`}
+              >
+                <strong>LOCATION:</strong> {address}
+              </p>
+              <Map lat={lat} lng={lng} mapOnClick={mapOnClick} />
+            </>
+          )} */}
 
-          <Map lat={lat} lng={lng} mapOnClick={mapOnClick} />
+          {/* Revised flow, show default Google Map coordinates */}
+          <>
+            <p className={`px-2 py-2 mb-0 text-left ${styles.modalAddress}`}>
+              {isGranted ? (
+                <>
+                  <strong>LOCATION:</strong> {address}
+                </>
+              ) : (
+                <>
+                  <strong>WARNING:</strong> {status}
+                </>
+              )}
+            </p>
+            <Map lat={lat} lng={lng} mapOnClick={mapOnClick} />
+          </>
         </Modal.Body>
       </Modal>
       <div className={styles.mainContainer}>
@@ -438,8 +502,10 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
                                 src={restaurantImg}
                                 className={styles.thumbNail}
                               />
-                              </Col>
-                              <Col style={{display:"flex", alignItems: "center"}}>
+                            </Col>
+                            <Col
+                              style={{ display: "flex", alignItems: "center" }}
+                            >
                               <Form.Control
                                 placeholder="Upload"
                                 className={styles.btnUpload}
@@ -452,14 +518,21 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
                             <>
                               <Row key={index} className={styles.imageItem}>
                                 <Col c>
-                                <img
-                                  src={image.photo}
-                                  className={styles.thumbNail}
-                                  alt="ad-img"
+                                  <img
+                                    src={image.photo}
+                                    className={styles.thumbNail}
+                                    alt="ad-img"
                                   />
                                 </Col>
-                                <Col style={{display:"flex", alignItems: "center", justifyContent: "center", flexDirection: "column"}}>
-                                  <Row  className={styles.btnUploadContent}>
+                                <Col
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    flexDirection: "column",
+                                  }}
+                                >
+                                  <Row className={styles.btnUploadContent}>
                                     <Form.Control
                                       value="Remove"
                                       type="button"
@@ -469,11 +542,11 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
                                       }
                                     />
                                   </Row>
-                                    <Form.Control
+                                  <Form.Control
                                     placeholder="Upload"
                                     className={styles.btnUpload}
                                     onClick={() => handleClick(onImageUpload)}
-                                    />
+                                  />
                                 </Col>
                               </Row>
                             </>
@@ -500,7 +573,8 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
                             )}
                             {errors.resolution && (
                               <span style={{ color: "red", fontWeight: "600" }}>
-                                Selected file does not match the desired resolution
+                                Selected file does not match the desired
+                                resolution
                               </span>
                             )}
                           </div>
@@ -531,7 +605,7 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
               alignItems: "center",
               justifyContent: "center",
             }}
-            >
+          >
             <PlacesAutocomplete
               address={address}
               setAddress={setAddress}
@@ -560,6 +634,7 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
                   type="text"
                   onKeyUp={() => resetMessages()}
                   {...register("contact_number")}
+                  disabled
                   required
                 />
               </Form.Group>
@@ -595,8 +670,14 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
                             src={restaurantImg}
                             className={styles.thumbNail}
                           />
-                          </Col>
-                          <Col style={{display:"flex", alignItems: "center", justifyContent: "center"}}>
+                        </Col>
+                        <Col
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
                           <Form.Control
                             placeholder="Upload"
                             className={styles.btnUploadMobile}
@@ -609,14 +690,21 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
                         <>
                           <Row key={index} className={styles.imageItem}>
                             <Col c>
-                            <img
-                              src={image.photo}
-                              className={styles.thumbNail}
-                              alt="ad-img"
+                              <img
+                                src={image.photo}
+                                className={styles.thumbNail}
+                                alt="ad-img"
                               />
                             </Col>
-                            <Col style={{display:"flex", alignItems: "center", justifyContent: "center", flexDirection: "column"}}>
-                              <Row  className={styles.btnUploadContent}>
+                            <Col
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexDirection: "column",
+                              }}
+                            >
+                              <Row className={styles.btnUploadContent}>
                                 <Form.Control
                                   value="Remove"
                                   type="button"
@@ -626,11 +714,11 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
                                   }
                                 />
                               </Row>
-                                <Form.Control
+                              <Form.Control
                                 placeholder="Upload"
                                 className={styles.btnUploadMobile}
                                 onClick={() => handleClick(onImageUpload)}
-                                />
+                              />
                             </Col>
                           </Row>
                         </>
@@ -679,10 +767,7 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
               </Button>
             </Col>
             <Col className={styles.buttonRightContainer}>
-              <Button
-                className={styles.btnUpdate}
-                type="submit"
-              >
+              <Button className={styles.btnUpdate} type="submit">
                 Update
               </Button>
               <UpdateSuccessModal
@@ -700,7 +785,7 @@ const ProfileContent: React.FC<ContainerProps> = ({}) => {
           {/* FOR  MOBILE  */}
           <Row className={`d-lg-none ${styles.buttonsContainer}`}>
             <Col className={styles.buttonLeftContainer}>
-            <Button
+              <Button
                 className={styles.btnChangePass}
                 onClick={() => navigate("/account/reset-password")}
               >

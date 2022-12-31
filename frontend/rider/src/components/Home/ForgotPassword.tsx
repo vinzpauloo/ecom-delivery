@@ -11,6 +11,7 @@ import constants from "../../utils/constants.json";
 import { useCalculateHash } from "../../hooks/useCalculateHash";
 
 import { useChangePass } from "../../hooks/useChangePass";
+import { isWhiteSpaceLike } from "typescript";
 
 // Setup form schema & validation
 interface IFormInputs {
@@ -45,33 +46,24 @@ const ForgotPassword: React.FC<ContainerProps> = ({}) => {
   });
 
   const onSubmit = async (data: IFormInputs) => {
-    // try {
-    // START: Forgot password API
-    console.log("forgotPassword", data);
+    setShowModal(true);
 
-    const response = await forgotPassword(data);
-    console.log("reset PW", response);
+    // console.log("forgotPassword", data);
+
+    const response = await forgotPassword({ ...data, type: "Rider" });
+    // console.log("reset PW", response);
 
     if (response.error) {
       // Prepare errors
+      setShowModal(false);
       let arrErrors: string[] = [];
       for (let value of Object.values(response.error)) {
         arrErrors.push("" + value);
       }
       setApiErrors(arrErrors);
     } else {
-      setShowModal(true);
       navigate("/forgot-password2");
     }
-
-    // END: Access password API
-    // } catch (err) {
-    //   if (err && err instanceof AxiosError)
-    //     setError("*" + err.response?.data.message);
-    //   else if (err && err instanceof Error) setError(err.message);
-
-    //   console.log("Error", err);
-    // }
   };
 
   const [modal, setModal] = useState(false);

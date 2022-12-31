@@ -61,7 +61,7 @@ const schema = yup
     password: yup
       .string()
       .min(7, constants.form.error.passwordMin)
-      .max(16, constants.form.error.passwordMax)
+      .max(32, constants.form.error.passwordMax)
       .required(),
     password_confirmation: yup
       .string()
@@ -85,6 +85,10 @@ const schema = yup
 interface ContainerProps {}
 
 const API_KEY: string = process.env.REACT_APP_GOOGLE_PLACES_API_KEY || "";
+const DEFAULT_COORDINATES = {
+  lat: 9.568885793195934,
+  lng: 123.77310991287231,
+};
 
 const Map = ({
   lat,
@@ -99,10 +103,13 @@ const Map = ({
 
   return (
     <GoogleMap
-      zoom={18}
+      zoom={16}
       center={center}
       mapContainerClassName={styles.map}
       onClick={(e) => mapOnClick(e)}
+      options={{
+        gestureHandling: "greedy",
+      }}
     >
       <Marker position={center} />
     </GoogleMap>
@@ -127,6 +134,7 @@ const PlacesAutocomplete = ({
     suggestions: { status, data },
     clearSuggestions,
   } = usePlacesAutocomplete();
+  console.log("hello");
 
   const handleSelect = async (address: any) => {
     setValue(address, false);
@@ -144,6 +152,7 @@ const PlacesAutocomplete = ({
     setValue(address, false);
     clearSuggestions();
   }, [address]);
+  console.log("!!!", status, ready);
 
   return (
     <Form.Group className="position-relative">
@@ -152,7 +161,7 @@ const PlacesAutocomplete = ({
         <ComboboxInput
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          // disabled={!ready}
+          disabled={!ready}
           placeholder="Address"
           className={styles.addressInput}
         />
@@ -175,8 +184,9 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
   const [images, setImages] = React.useState<any>();
   const [isLoading, setIsLoading] = useState(true);
   const [defaultImg, setDefaultImg] = useState(true);
-  const [lat, setLat] = useState(0);
-  const [lng, setLng] = useState(0);
+  const [isGranted, setIsGranted] = useState(false);
+  const [lat, setLat] = useState(DEFAULT_COORDINATES.lat);
+  const [lng, setLng] = useState(DEFAULT_COORDINATES.lng);
   const [status, setStatus] = useState("");
   const [modalShow, setModalShow] = useState(false);
   const [address, setAddress] = useState("");
@@ -221,7 +231,7 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
     const message = document.getElementById("imageError") as HTMLInputElement;
 
     try {
-      console.log(address);
+      // *console.log(address);
       const data1 = {
         ...data,
         address: address,
@@ -237,7 +247,7 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
         long: lng.toString(),
       };
       const response = await validateFields(data1);
-      console.log(data2);
+      // *console.log(data2);
 
       if (response.errors) {
         // Prepare errors
@@ -254,7 +264,7 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
         navigate("/otp");
       }
     } catch (error) {
-      console.log(error);
+      // *console.log(error);
       // setErrorImage(e);
       message.innerHTML =
         "A restaurant profile photo is required. Please make sure the image is less than 15MB.";
@@ -267,11 +277,21 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
     setAddress(response);
   };
 
+  const mapErrorAlert = () => {
+    setTimeout(
+      () =>
+        alert("Location permission is not granted by your browser or device."),
+      500
+    );
+  };
+
   const handlePinLocation = () => {
     if (!navigator.geolocation) {
       setStatus("Geolocation is not supported by your browser");
+      alert("Geolocation is not supported by your browser or device.");
     } else {
-      setStatus("Locating...");
+      setStatus("Requesting location access ...");
+      setModalShow(true);
 
       navigator.permissions
         .query({
@@ -279,19 +299,17 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
         })
         .then(function (result) {
           if (result.state === "denied") {
-            alert(
-              "Location access is denied by your browser. Please grant location permission."
-            );
+            mapErrorAlert();
           }
 
-          // if (result.state === "granted") setModalShow(true);
+          if (result.state === "granted") setIsGranted(true);
 
           result.onchange = function () {
             if (result.state === "denied") {
-              alert(
-                "Location access is denied by your browser. Please grant location permission."
-              );
+              mapErrorAlert();
             }
+
+            if (result.state === "granted") setIsGranted(true);
           };
         });
 
@@ -300,7 +318,6 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
           setStatus("");
           setLat(position.coords.latitude);
           setLng(position.coords.longitude);
-          setModalShow(true);
 
           // Reverse Geocode
           handleReverseGeocode(
@@ -309,7 +326,7 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
           );
         },
         () => {
-          setStatus("Unable to retrieve your location");
+          setStatus("Unable to retrieve your location.");
         }
       );
     }
@@ -323,6 +340,8 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
     handleReverseGeocode(e.latLng.lat(), e.latLng.lng());
   };
 
+  if (!isLoaded) return <div>Loading...</div>;
+
   return (
     <div>
       <Modal
@@ -333,11 +352,38 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
         centered
       >
         <Modal.Body className="p-0">
-          <p className={`px-2 py-2 mb-0 text-center ${styles.modalAddress}`}>
-            <strong>LOCATION:</strong> {address}
-          </p>
+          {/* Old flow, need */}
+          {/* {!isGranted ? (
+            <div className="text-center py-5">
+              <p>Waiting for location permission.</p>
+              <div className="spinner-grow text-primary" role="status"></div>
+            </div>
+          ) : (
+            <>
+              <p
+                className={`px-2 py-2 mb-0 text-center ${styles.modalAddress}`}
+              >
+                <strong>LOCATION:</strong> {address}
+              </p>
+              <Map lat={lat} lng={lng} mapOnClick={mapOnClick} />
+            </>
+          )} */}
 
-          <Map lat={lat} lng={lng} mapOnClick={mapOnClick} />
+          {/* Revised flow, show default Google Map coordinates */}
+          <>
+            <p className={`px-2 py-2 mb-0 text-left ${styles.modalAddress}`}>
+              {isGranted ? (
+                <>
+                  <strong>LOCATION:</strong> {address}
+                </>
+              ) : (
+                <>
+                  <strong>WARNING:</strong> {status}
+                </>
+              )}
+            </p>
+            <Map lat={lat} lng={lng} mapOnClick={mapOnClick} />
+          </>
         </Modal.Body>
       </Modal>
       <Form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
@@ -418,7 +464,7 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
           <Row className={styles.restaurantContent}>
             <Col className="col-md-9">
               <Row>
-                <Col className="col-lg-9 col-md-8 pe-1">
+                <Col>
                   <Form.Group className="position-relative">
                     <Form.Control
                       type="text"
@@ -428,7 +474,17 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
                     />
                   </Form.Group>
                 </Col>
-                <Col className="col-lg-3 col-md-4 ps-1">
+              </Row>
+              <Row>
+                <Col className={`col-lg-9`}>
+                  <PlacesAutocomplete
+                    address={address}
+                    setAddress={setAddress}
+                    setLat={setLat}
+                    setLng={setLng}
+                  />
+                </Col>
+                <Col className="col-lg-3" xs={{ span: 3 }}>
                   <Button
                     variant="primary"
                     className={styles.pin}
@@ -436,16 +492,6 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
                   >
                     Pin my location
                   </Button>
-                </Col>
-              </Row>
-              <Row>
-                <Col>
-                  <PlacesAutocomplete
-                    address={address}
-                    setAddress={setAddress}
-                    setLat={setLat}
-                    setLng={setLng}
-                  />
                 </Col>
               </Row>
               <Row>

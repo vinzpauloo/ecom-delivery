@@ -31,7 +31,7 @@ export const useUser = () => {
         error = "*" + err.response?.data.message;
       else if (err && err instanceof Error) error = err.message;
 
-      console.log("Error", err);
+      // *console.log("Error", err);
       return error;
     }
   };
@@ -39,7 +39,7 @@ export const useUser = () => {
   const getUser = async () => {
     try {
       // START: Access user API
-      const endpoint = "api/user";
+      const endpoint = "api/user/profile";
       const options = {
         headers: {
           Authorization: authHeader(),
@@ -61,8 +61,8 @@ export const useUser = () => {
         error = "*" + err.response?.data.message;
       else if (err && err instanceof Error) error = err.message;
 
-      console.log("Error", err);
-      return error;
+      // *console.log("Error", err);
+      return { error };
     }
   };
 
@@ -72,12 +72,13 @@ export const useUser = () => {
       const endpoint = "api/user";
       const options = {
         headers: {
+          "Content-Type": "multipart/form-data",
           Authorization: authHeader(),
-          "X-Authorization": calculateHash(endpoint, data),
+          "X-Authorization": calculateHash(endpoint, data, true),
         },
       };
 
-      const response = await axios.put(endpoint, data, options);
+      const response = await axios.post(endpoint, data, options);
       // END: Access update user API
 
       if (response.status === 200) {
@@ -91,7 +92,7 @@ export const useUser = () => {
         error = "*" + err.response?.data.message;
       else if (err && err instanceof Error) error = err.message;
 
-      console.log("Error", err);
+      // *console.log("Error", err);
       return { error: error };
     }
   };
@@ -111,7 +112,7 @@ export const useUser = () => {
       // END: Access change password API
 
       if (response.status === 201) {
-        console.log(response);
+        // *console.log(response);
         const { data, message } = response.data;
 
         return { token: data.token, message };
@@ -122,7 +123,7 @@ export const useUser = () => {
         error = "*" + err.response?.data.message;
       else if (err && err instanceof Error) error = err.message;
 
-      console.log("Error", err);
+      // *console.log("Error", err);
       return { error: error };
     }
   };

@@ -7,12 +7,12 @@ export const useStatistics = () => {
   const authHeader = useAuthHeader();
 
   const getDailyStatistics = async (data) => {
-    console.log("getOrderCompleted hook ...");
-    console.log(data);
+    // console.log("getOrderCompleted hook ...");
+    // console.log(data);
 
     try {
       // START: Access completed orders API
-      const endpoint = "api/statistics/rider";
+      const endpoint = "api/statistics/riders/personal/transactions";
       const options = {
         params: data,
         headers: {
@@ -36,18 +36,18 @@ export const useStatistics = () => {
         error = "*" + err.response?.data.message;
       else if (err && err instanceof Error) error = err.message;
 
-      console.log("Error", err);
+      // console.log("Error", err);
       return error;
     }
   };
 
   const getWeeklyStatistics = async (data) => {
-    console.log("getOrderCompleted hook ...");
-    console.log(data);
+    // console.log("getOrderCompleted hook ...");
+    // console.log(data);
 
     try {
       // START: Access completed orders API
-      const endpoint = "api/statistics/rider";
+      const endpoint = "api/statistics/riders/personal/transactions";
       const options = {
         params: data,
         headers: {
@@ -71,18 +71,18 @@ export const useStatistics = () => {
         error = "*" + err.response?.data.message;
       else if (err && err instanceof Error) error = err.message;
 
-      console.log("Error", err);
+      // console.log("Error", err);
       return error;
     }
   };
 
   const getMonthlyStatistics = async (data) => {
-    console.log("getOrderCompleted hook ...");
-    console.log(data);
+    // console.log("getOrderCompleted hook ...");
+    // console.log(data);
 
     try {
       // START: Access completed orders API
-      const endpoint = "api/statistics/rider";
+      const endpoint = "api/statistics/riders/personal/transactions";
       const options = {
         params: data,
         headers: {
@@ -106,7 +106,7 @@ export const useStatistics = () => {
         error = "*" + err.response?.data.message;
       else if (err && err instanceof Error) error = err.message;
 
-      console.log("Error", err);
+      // console.log("Error", err);
       return error;
     }
   };

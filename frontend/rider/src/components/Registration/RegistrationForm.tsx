@@ -51,7 +51,7 @@ const schema = yup
     password: yup
       .string()
       .min(7, constants.form.error.passwordMin)
-      .max(16, constants.form.error.passwordMax)
+      .max(32, constants.form.error.passwordMax)
       .required(),
     password_confirmation: yup
       .string()
@@ -68,9 +68,9 @@ const schema = yup
   })
   .required();
 
-interface ContainerProps {}
+interface ContainerProps { }
 
-const RegistrationForm: React.FC<ContainerProps> = ({}) => {
+const RegistrationForm: React.FC<ContainerProps> = ({ }) => {
   const [error, setError] = useState("");
   const [multipleErrors, setMultipleErrors] = useState([""]);
   const [errorEmail, setErrorEmail] = useState("");
@@ -96,7 +96,7 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
     addUpdateIndex: number[] | undefined
   ) => {
     // data for submit
-    console.log(imageList, addUpdateIndex);
+    // console.log(imageList, addUpdateIndex);
     setImages(imageList as never[]);
     setDefaultImg((prev) => !prev);
   };
@@ -121,8 +121,8 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
     try {
       const data1 = { ...data };
       const data2 = { ...data, photo: images[0].photo };
-      console.log("onSubmit", data2);
-      console.log(images[0].photo);
+      // console.log("onSubmit", data2);
+      // console.log(images[0].photo);
 
       // Add address to form data
       // const newFormData = { ...data, address: address };
@@ -147,7 +147,7 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
         navigate("/registration2");
       }
     } catch (e) {
-      console.log(e);
+      // console.log(e);
       // setErrorImage(e);
       message.innerHTML =
         "A profile photo is required. Please make sure the image is less than 15MB.";
@@ -155,7 +155,7 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
   };
 
   const handleClick = (onImageUpload: any) => {
-    console.log("aaaa");
+    // console.log("aaaa");
     // setDefaultImg((prev) => !prev);
     onImageUpload();
   };
@@ -314,7 +314,7 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
           maxNumber={maxNumber}
           dataURLKey="photo"
           maxFileSize={1572864}
-          // acceptType={["jpg", "png"]}
+        // acceptType={["jpg", "png"]}
         >
           {({
             imageList,
@@ -347,7 +347,7 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
                     placeholder="Profile Picture (PDF*JPG*PNG)"
                     className={`bg-white ${styles.test}`}
                     disabled
-                    // {...register("photo")}
+                  // {...register("photo")}
                   />
                 </Col>
                 <Col>
@@ -392,9 +392,9 @@ const RegistrationForm: React.FC<ContainerProps> = ({}) => {
                   type="submit"
                   className="mt-4"
                   id="nextBtn-2"
-                  // href="/registration2"
-                  // onClick={Continue}
-                  // disabled={!isValid || !address}
+                // href="/registration2"
+                // onClick={Continue}
+                // disabled={!isValid || !address}
                 >
                   Next
                 </Button>

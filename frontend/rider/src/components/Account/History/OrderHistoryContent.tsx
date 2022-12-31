@@ -145,7 +145,7 @@ const OrderHistoryContent: React.FC<ContainerProps> = ({}) => {
   const loadOrderForDelivery = async (status: string) => {
     const params = { status: status };
     const response = await getForDeliveryOTW(params);
-    console.log("getForDelivery", response);
+    // console.log("getForDelivery", response);
     setForDelivery(response.data);
   };
 
@@ -162,7 +162,7 @@ const OrderHistoryContent: React.FC<ContainerProps> = ({}) => {
     const data = response.data.filter(
       (item: any) => item.order_status === "delivered"
     );
-    console.log("getOrderCompleted", response);
+    // console.log("getOrderCompleted", response);
 
     setOrders((current: any) => [...current, ...data]);
     setLastPage(response.last_page);
@@ -171,7 +171,7 @@ const OrderHistoryContent: React.FC<ContainerProps> = ({}) => {
   };
 
   const handleLoadMore = () => {
-    console.log("load more ...");
+    // console.log("load more ...");
     loadOrderCompleted("delivered, canceled", currentPage + 1);
     setCurrentPage(currentPage + 1);
   };
@@ -179,7 +179,7 @@ const OrderHistoryContent: React.FC<ContainerProps> = ({}) => {
   const loadOrderCanceled = async (status: string) => {
     const params = { status: status };
     const response = await getOrderCanceled(params);
-    console.log("getOrderCanceled", response);
+    // console.log("getOrderCanceled", response);
     setForOrderCanceled(response.data);
   };
 
@@ -206,7 +206,7 @@ const OrderHistoryContent: React.FC<ContainerProps> = ({}) => {
   };
 
   const handleClickCancel = (id: any) => {
-    console.log("ajajaj");
+    // console.log("ajajaj");
     navigate("cancelled/" + id);
   };
 
@@ -483,7 +483,7 @@ const OrderHistoryContent: React.FC<ContainerProps> = ({}) => {
   //
 
   const OrderItem = (item: ForCompletedItem, index: number) => {
-    console.log(search);
+    // console.log(search);
     const stringID = String(item.id);
     if (search && stringID.includes(search)) {
       return (
@@ -1115,18 +1115,20 @@ const OrderHistoryContent: React.FC<ContainerProps> = ({}) => {
           )}
         </div>
 
-        <div className={`${styles.bottomBtn} mt-3`}>
-          <Button onClick={() => setModalShow1(true)}>Completed</Button>
-          <CompletedModal
-            show={modalShow1}
-            onHide={() => setModalShow1(false)}
-          />
-          <Button onClick={() => setModalShow2(true)}>Cancelled</Button>
-          <CancelledModal
-            show={modalShow2}
-            onHide={() => setModalShow2(false)}
-          />
-        </div>
+        {forOrderCompleted.length !== 0 || forOrderCanceled.length !== 0 ? (
+          <div className={`${styles.bottomBtn} mt-3`}>
+            <Button onClick={() => setModalShow1(true)}>Completed</Button>
+            <CompletedModal
+              show={modalShow1}
+              onHide={() => setModalShow1(false)}
+            />
+            <Button onClick={() => setModalShow2(true)}>Cancelled</Button>
+            <CancelledModal
+              show={modalShow2}
+              onHide={() => setModalShow2(false)}
+            />
+          </div>
+        ) : null}
       </div>
     </div>
   );
